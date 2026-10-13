@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ahmed Medhat | Full Stack Engineer & Cloud Architect - Portfolio</title>
+  <meta name="description" content="البورتفوليو الشخصي للمهندس أحمد مدحت - مطور برمجيات متكامل وخبير منصات الويب السحابية Next.js & Supabase">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+
+  <!-- Background Ambient Lights -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <!-- Header / Navigation -->
+  <header class="navbar-wrapper">
+    <nav class="navbar">
+      <a href="#hero" class="brand-logo">
+        <span class="logo-badge">AM</span>
+        <div class="brand-text">
+          <span class="name">أحمد مدحت</span>
+          <span class="title">Full Stack Engineer</span>
+        </div>
+      </a>
+
+      <div class="nav-links">
+        <a href="#featured" class="nav-link">المشروع الرئيسي</a>
+        <a href="#architecture" class="nav-link">الهندسة البرمجية</a>
+        <a href="#projects" class="nav-link">أعمال أخرى</a>
+        <a href="#skills" class="nav-link">المهارات التقنية</a>
+        <a href="#contact" class="nav-link btn-contact-nav">تواصل معي</a>
+      </div>
+
+      <div class="nav-actions">
+        <a href="https://football-academy-rho.vercel.app" target="_blank" rel="noopener noreferrer" class="btn-live-header">
+          <span class="pulse-dot"></span>
+          <span>الموقع الحي ⚽</span>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section id="hero" class="hero-section">
+    <div class="container hero-container">
+      <div class="hero-badge">
+        <span class="badge-icon">🚀</span>
+        <span>متاح للعمل على مشاريع برمجية متقدمة ومنصات SaaS</span>
+      </div>
+
+      <h1 class="hero-title">
+        أبني منصات وتطبيقات ويب سحابية
+        <span class="gradient-text">عالية الأداء والدقة</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        مهندس برمجيات متخصص في هندسة تطبيقات الويب المتكاملة باستخدام <strong>Next.js 16</strong> و <strong>Supabase Cloud</strong>.
+        أركز على سرعة الاستجابة، الأمان المتقدم، والتصميم الفاخر الذي يمنح المستخدمين تجربة استثنائية.
+      </p>
+
+      <div class="hero-cta-group">
+        <a href="#featured" class="btn-primary">
+          <span>استكشف المشروع الرئيسي</span>
+          <span class="arrow">↓</span>
+        </a>
+        <a href="https://football-academy-rho.vercel.app" target="_blank" rel="noopener noreferrer" class="btn-secondary">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          <span>معاينة منصة FIFA FC الحية</span>
+        </a>
+        <a href="#contact" class="btn-outline">
+          <span>ابدأ مشروعك معي</span>
+        </a>
+      </div>
+
+      <!-- Stats Counters -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number">100%</div>
+          <div class="stat-label">جاهزية سحابية (Production-Ready)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">&lt;50ms</div>
+          <div class="stat-label">سرعة استجابة قاعدة البيانات في الوقت الفعلي</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">Next.js 16</div>
+          <div class="stat-label">أحدث بنية App Router & Turbopack</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">4 Roles</div>
+          <div class="stat-label">منظومة صلاحيات كاملة (Admin • Coach • Parent • Player)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Project Spotlight: FIFA FC ACADEMY -->
+  <section id="featured" class="featured-section">
+    <div class="container">
+      <div class="section-tag">
+        <span>🏆 المشروع البارز (Flagship Project)</span>
+      </div>
+
+      <div class="featured-header">
+        <div>
+          <h2 class="section-title">FIFA FC ACADEMY — المنظومة الذكية لإدارة الأكاديميات</h2>
+          <p class="section-desc">
+            منصة SaaS سحابية متكاملة مصممة لإدارة أكاديميات كرة القدم الاحترافية، تربط الإدارة والمدربين وأولياء الأمور في نظام موحد وفوري.
+          </p>
+        </div>
+        <div class="featured-actions">
+          <a href="https://football-academy-rho.vercel.app" target="_blank" rel="noopener noreferrer" class="btn-gold-live">
+            <span>فتح المنصة الحية الآن</span>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Live Interactive Showcase Card -->
+      <div class="showcase-card">
+        <!-- Mockup Window Bar -->
+        <div class="mockup-header">
+          <div class="mac-dots">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+          </div>
+          <div class="mockup-url">
+            <span class="lock-icon">🔒</span>
+            <span>https://football-academy-rho.vercel.app</span>
+          </div>
+          <div class="mockup-badge">
+            <span class="pulse-green"></span>
+            <span>Live on Vercel Edge</span>
+          </div>
+        </div>
+
+        <!-- Project Hero Visual & Details -->
+        <div class="showcase-content">
+          <div class="showcase-media">
+            <div class="preview-banner">
+              <div class="preview-overlay">
+                <span class="preview-tag">⚽ FIFA FC ACADEMY v2.0</span>
+                <h3>نظام رقمي فاخر باللون الذهبي والأسود الملكي</h3>
+                <p>مبني ومربوط مباشرة بـ Supabase Cloud Authentication وقاعدة بيانات PostgreSQL المحدثة.</p>
+                <div class="quick-links-pills">
+                  <a href="https://football-academy-rho.vercel.app/admin" target="_blank" class="pill">لوحة الأدمن</a>
+                  <a href="https://football-academy-rho.vercel.app/coach" target="_blank" class="pill">لوحة المدرب</a>
+                  <a href="https://football-academy-rho.vercel.app/parent" target="_blank" class="pill">بوابة ولي الأمر</a>
+                  <a href="https://football-academy-rho.vercel.app/login" target="_blank" class="pill">تسجيل الدخول</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="showcase-specs">
+            <h4 class="specs-heading">أبرز التقنيات والميزات المحققة:</h4>
+
+            <div class="spec-list">
+              <div class="spec-item">
+                <div class="spec-icon">⚡</div>
+                <div class="spec-body">
+                  <h5>Next.js 16 & Turbopack Architecture</h5>
+                  <p>توليد صفحات هجين (SSR & ISR) مع استجابة فائقة السرعة وأعلى معايير SEO.</p>
+                </div>
+              </div>
+
+              <div class="spec-item">
+                <div class="spec-icon">🔐</div>
+                <div class="spec-body">
+                  <h5>Supabase Auth & Gmail Verification</h5>
+                  <p>التحقق الحقيقي من البريد الإلكتروني، إرسال روابط تفعيل إلى Gmail، ونظام استعادة كلمة المرور.</p>
+                </div>
+              </div>
+
+              <div class="spec-item">
+                <div class="spec-icon">🛡️</div>
+                <div class="spec-body">
+                  <h5>PostgreSQL Row Level Security (RLS)</h5>
+                  <p>عزل كامل للبيانات وتأمين استعلامات اللاعبين والمدربين والحصص لمنع أي وصول غير مصرح به.</p>
+                </div>
+              </div>
+
+              <div class="spec-item">
+                <div class="spec-icon">📋</div>
+                <div class="spec-body">
+                  <h5>Tactical Pitch & Attendance Studio</h5>
+                  <p>لوحة تكتيكية لرسم التشكيلات ورصد حضور وغياب اللاعبين وتقييم أدائهم البدني والمهاري.</p>
+                </div>
+              </div>
+
+              <div class="spec-item">
+                <div class="spec-icon">💳</div>
+                <div class="spec-body">
+                  <h5>Subscriptions & Financial Ledger</h5>
+                  <p>إدارة الباقات والاشتراكات الشهرية والسنوية، وحساب الإيرادات والأقساط المستحقة بدقة.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="tech-tags-cloud">
+              <span class="tag">Next.js 16</span>
+              <span class="tag">React 19</span>
+              <span class="tag">TypeScript</span>
+              <span class="tag">Supabase</span>
+              <span class="tag">PostgreSQL</span>
+              <span class="tag">Google OAuth</span>
+              <span class="tag">Vercel Edge</span>
+              <span class="tag">Tailwind CSS</span>
+              <span class="tag">Turbopack</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive System Architecture Breakdown -->
+  <section id="architecture" class="arch-section">
+    <div class="container">
+      <div class="section-tag">
+        <span>⚙️ الهيكلية البرمجية (System Architecture)</span>
+      </div>
+      <h2 class="section-title">كيف تم بناء وتأمين المنظومة السحابية؟</h2>
+      <p class="section-desc">
+        تصميم هندسي متين يفصل بين واجهة المستخدم، وطبقة الخادم (Server Actions)، وقاعدة البيانات المحمية.
+      </p>
+
+      <div class="arch-tabs">
+        <button class="tab-btn active" data-tab="tab-auth">1. الأمان والمصادقة (Auth & RBAC)</button>
+        <button class="tab-btn" data-tab="tab-db">2. قاعدة البيانات (PostgreSQL & RLS)</button>
+        <button class="tab-btn" data-tab="tab-realtime">3. الحضور والتقييم الفوري</button>
+        <button class="tab-btn" data-tab="tab-deployment">4. النشر والتشغيل (CI/CD)</button>
+      </div>
+
+      <div class="arch-content">
+        <!-- Tab 1 -->
+        <div id="tab-auth" class="tab-pane active">
+          <div class="tab-card">
+            <div class="tab-card-header">
+              <span class="tab-badge">Supabase Auth Cloud</span>
+              <h3>نظام مصادقة ثلاثي المراحل بأعلى معايير الأمان</h3>
+            </div>
+            <div class="tab-grid">
+              <div class="feature-box">
+                <h4>🔑 تحقق Gmail الحقيقي</h4>
+                <p>إجبار التسجيل على استخدام حسابات Gmail مع التحقق من الصيغة، وإرسال بريد تفعيل آمن قبل السماح بالدخول.</p>
+              </div>
+              <div class="feature-box">
+                <h4>🌐 الدخول السريع بـ Google OAuth</h4>
+                <p>زر رسمي مدمج يتيح لولي الأمر الدخول بضغطة واحدة مع تبادل التوكن عبر مسار <code>/auth/callback</code>.</p>
+              </div>
+              <div class="feature-box">
+                <h4>⏳ اعتماد المدربين من المدير (Pending Approval)</h4>
+                <p>أي مدرب يسجل حسابه يظل معلقاً حتى يقوم مدير الأكاديمية باعتماده رسمياً وتوزيع الفئات السنية عليه.</p>
+              </div>
+              <div class="feature-box">
+                <h4>🔄 استعادة كلمة المرور المشفرة</h4>
+                <p>إرسال روابط Reset Password مؤقتة ومشفرة مباشرة إلى صندوق بريد المستخدم في Gmail.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2 -->
+        <div id="tab-db" class="tab-pane">
+          <div class="tab-card">
+            <div class="tab-card-header">
+              <span class="tab-badge">PostgreSQL Schema & Security</span>
+              <h3>جداول علائقية وسياسات RLS متقدمة مانعة للتكرار الدائري</h3>
+            </div>
+            <div class="tab-grid">
+              <div class="feature-box">
+                <h4>📊 8 جداول علائقية</h4>
+                <p>تشمل: profiles, groups, players, sessions, attendance, evaluations, subscriptions, notifications.</p>
+              </div>
+              <div class="feature-box">
+                <h4>🛡️ سياسات RLS المحكمة</h4>
+                <p>عزل تام: ولي الأمر يرى أبناءه فقط، المدرب يرى لاعبيه وحصصه، والأدمن يملك صلاحية المراقبة الشاملة.</p>
+              </div>
+              <div class="feature-box">
+                <h4>⚡ حل التكرار الدائري (RLS Fix)</h4>
+                <p>معالجة المشاكل المرجعية المعقدة بين الجداول لضمان سرعة الاستعلام واستجابة 200 OK دون أخطاء 500.</p>
+              </div>
+              <div class="feature-box">
+                <h4>💾 تزامن ثنائي هجين</h4>
+                <p>تكامل سلس بين Supabase Cloud و Fallback محلي يضمن استمرار عمل الموقع في جميع الظروف.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3 -->
+        <div id="tab-realtime" class="tab-pane">
+          <div class="tab-card">
+            <div class="tab-card-header">
+              <span class="tab-badge">Interactive Pitch & Coach Tools</span>
+              <h3>أدوات المدرب التفاعلية والتقييم الرياضي الذكي</h3>
+            </div>
+            <div class="tab-grid">
+              <div class="feature-box">
+                <h4>⚽ الملعب التكتيكي (Tactical Board)</h4>
+                <p>أداة بصرية لرسم الخطط، تحريك مراكز اللاعبين في الملعب وتحديد التشكيلات قبل المباريات والتمارين.</p>
+              </div>
+              <div class="feature-box">
+                <h4>⏱️ رصد الحضور بنقرة زر</h4>
+                <p>تسجيل الحاضرين والغائبين للحصة التدريبية وتوليد إحصائيات حضور تراكمية لكل لاعب.</p>
+              </div>
+              <div class="feature-box">
+                <h4>📈 بطاقات التقييم الفني</h4>
+                <p>تقييم خماسي المحاور: المهارة، اللياقة البدنية، الالتزام، الروح الرياضية، والوعي التكتيكي.</p>
+              </div>
+              <div class="feature-box">
+                <h4>🔔 إشعارات الإدارة المباشرة</h4>
+                <p>تنبيهات فورية لمدير الأكاديمية عند أي تسجيل لاعب جديد أو طلب انضمام مدرب أو حجز اختبار أداء.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4 -->
+        <div id="tab-deployment" class="tab-pane">
+          <div class="tab-card">
+            <div class="tab-card-header">
+              <span class="tab-badge">Vercel Production & CI/CD</span>
+              <h3>بنية تحتية سحابية موثوقة ونشر مؤتمت بالكامل</h3>
+            </div>
+            <div class="tab-grid">
+              <div class="feature-box">
+                <h4>🌐 شبكة Edge Global CDN</h4>
+                <p>توزيع المنصة على عشرات مراكز البيانات حول العالم لتوفير سرعة تصفح لحظية داخل مصر وخارجها.</p>
+              </div>
+              <div class="feature-box">
+                <h4>🚀 بيئة إنتاجية حية ومستقرة</h4>
+                <p>ربط نطاق Vercel وتأمين شهادات SSL تلقائية وتفعيل الحماية ضد هجمات DDoS.</p>
+              </div>
+              <div class="feature-box">
+                <h4>📦 أدوات MinGit و Git الذاتية</h4>
+                <p>إدارة الإصدارات ومزامنة التعديلات عبر Git commits منظمة توثق مراحل التطوير البرمجي.</p>
+              </div>
+              <div class="feature-box">
+                <h4>📱 تجاوب كامل مع كافة الشاشات</h4>
+                <p>تصميم متوافق بنسبة 100% مع الهواتف الذكية، الأجهزة اللوحية، وشاشات الحواسيب المكتبية الفائقة.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Other Projects & Capabilities -->
+  <section id="projects" class="projects-section">
+    <div class="container">
+      <div class="section-tag">
+        <span>💼 معرض الأعمال الإضافي</span>
+      </div>
+      <h2 class="section-title">نماذج من حلول ومنصات برمجية أخرى</h2>
+      <p class="section-desc">مشاريع وحلول برمجية متنوعة تم بناؤها بأعلى معايير الجودة والسرعة.</p>
+
+      <div class="projects-grid">
+        <!-- Project 1 -->
+        <div class="project-card">
+          <div class="project-header">
+            <span class="project-badge">Sports ERP • Featured</span>
+            <span class="project-year">2026</span>
+          </div>
+          <h3 class="project-name">FIFA FC ACADEMY Platform</h3>
+          <p class="project-desc">
+            المنظومة المتكاملة لإدارة أكاديميات كرة القدم والمدربين وأولياء الأمور مع قاعدة بيانات Supabase.
+          </p>
+          <div class="project-tech">
+            <span>Next.js 16</span>
+            <span>TypeScript</span>
+            <span>Supabase</span>
+            <span>PostgreSQL</span>
+          </div>
+          <a href="https://football-academy-rho.vercel.app" target="_blank" class="project-link">
+            <span>زيارة المنصة الحية</span>
+            <span>↗</span>
+          </a>
+        </div>
+
+        <!-- Project 2 -->
+        <div class="project-card">
+          <div class="project-badge-secondary">FinTech SaaS</div>
+          <div class="project-header">
+            <span class="project-badge">B2B SaaS</span>
+            <span class="project-year">2025</span>
+          </div>
+          <h3 class="project-name">NovaPay — Payment & Billing Hub</h3>
+          <p class="project-desc">
+            بوابة لإدارة المعاملات المالية، الفواتير المتكررة، والمحافظ الرقمية مع لوحة تحكم وإحصائيات رسومية متقدمة.
+          </p>
+          <div class="project-tech">
+            <span>React</span>
+            <span>Node.js</span>
+            <span>REST APIs</span>
+            <span>Tailwind</span>
+          </div>
+          <span class="project-status">مكتمل وموثق</span>
+        </div>
+
+        <!-- Project 3 -->
+        <div class="project-card">
+          <div class="project-header">
+            <span class="project-badge">Cloud Dashboard</span>
+            <span class="project-year">2025</span>
+          </div>
+          <h3 class="project-name">Apex Fleet & Logistics Platform</h3>
+          <p class="project-desc">
+            نظام تتبع وإدارة أساطيل النقل والشحن، جدولة الرحلات، ورصد مؤشرات الأداء الحية واستهلاك الوقود.
+          </p>
+          <div class="project-tech">
+            <span>Next.js</span>
+            <span>PostgreSQL</span>
+            <span>WebSockets</span>
+            <span>Mapbox</span>
+          </div>
+          <span class="project-status">مكتمل وموثق</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Technical Arsenal (Skills) -->
+  <section id="skills" class="skills-section">
+    <div class="container">
+      <div class="section-tag">
+        <span>🛠️ المهارات والتقنيات</span>
+      </div>
+      <h2 class="section-title">الأدوات التي أستخدمها لبناء مشاريعك</h2>
+      <p class="section-desc">مزيج من أحدث تقنيات الويب السحابية لضمان الأمان، الاستقرار، والسرعة القصوى.</p>
+
+      <div class="skills-grid">
+        <div class="skill-category">
+          <div class="category-icon">🎨</div>
+          <h3>تطوير الواجهات (Frontend)</h3>
+          <ul class="skill-list">
+            <li><strong>Next.js 16 (App Router)</strong> — المعمارية الأحدث</li>
+            <li><strong>React 19 & Hooks</strong> — واجهات حية تفاعلية</li>
+            <li><strong>TypeScript</strong> — كود نظيف محكم النوع</li>
+            <li><strong>Tailwind CSS & Vanilla CSS</strong> — تصاميم مخصصة فاخرة</li>
+            <li><strong>Responsive & Mobile-First</strong> — توافق كامل مع كافة الأجهزة</li>
+          </ul>
+        </div>
+
+        <div class="skill-category">
+          <div class="category-icon">⚙️</div>
+          <h3>الخوادم وقواعد البيانات (Backend & DB)</h3>
+          <ul class="skill-list">
+            <li><strong>Supabase Cloud Backend</strong> — مصادقة وقواعد بيانات</li>
+            <li><strong>PostgreSQL & SQL Migrations</strong> — استعلامات معقدة</li>
+            <li><strong>Row Level Security (RLS)</strong> — حماية وعزل البيانات</li>
+            <li><strong>Server Actions & REST APIs</strong> — منطق الخادم المتين</li>
+            <li><strong>Firebase Auth & Cloud Firestore</strong> — تزامن فوري</li>
+          </ul>
+        </div>
+
+        <div class="skill-category">
+          <div class="category-icon">🚀</div>
+          <h3>التشغيل والنشر (DevOps & Tools)</h3>
+          <ul class="skill-list">
+            <li><strong>Vercel Global CDN</strong> — استضافة ونشر مؤتمت</li>
+            <li><strong>Git & GitHub</strong> — إدارة الإصدارات البرمجية</li>
+            <li><strong>Turbopack & Webpack</strong> — تجميع وبناء فائق السرعة</li>
+            <li><strong>Performance & SEO Optimization</strong> — معايير الأداء 100%</li>
+            <li><strong>Google Cloud & OAuth 2.0</strong> — تكامل مزودي الدخول</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact & Hire Me Section -->
+  <section id="contact" class="contact-section">
+    <div class="container contact-container">
+      <div class="contact-card">
+        <div class="contact-badge">
+          <span>📬 تواصل مباشر</span>
+        </div>
+        <h2 class="contact-title">هل لديك فكرة مشروع أو منصة تريد تحويلها لواقع؟</h2>
+        <p class="contact-desc">
+          أنا متاح للتعاقد على مشاريع الويب المتقدمة، بناء منصات الـ SaaS، وتطوير الأنظمة الإدارية الاحترافية.
+        </p>
+
+        <div class="contact-channels">
+          <!-- WhatsApp -->
+          <a href="https://wa.me/201012345678" target="_blank" rel="noopener noreferrer" class="channel-card whatsapp">
+            <div class="channel-icon">💬</div>
+            <div class="channel-info">
+              <span class="channel-name">واتساب (WhatsApp)</span>
+              <span class="channel-detail">محادثة مباشرة وفورية</span>
+            </div>
+            <span class="channel-arrow">←</span>
+          </a>
+
+          <!-- Email -->
+          <a href="mailto:ahmedmedhat992002@gmail.com" class="channel-card email">
+            <div class="channel-icon">✉️</div>
+            <div class="channel-info">
+              <span class="channel-name">البريد الإلكتروني</span>
+              <span class="channel-detail">ahmedmedhat992002@gmail.com</span>
+            </div>
+            <span class="channel-arrow">←</span>
+          </a>
+
+          <!-- Live Website Link -->
+          <a href="https://football-academy-rho.vercel.app" target="_blank" rel="noopener noreferrer" class="channel-card academy">
+            <div class="channel-icon">⚽</div>
+            <div class="channel-info">
+              <span class="channel-name">منصة الأكاديمية الحية</span>
+              <span class="channel-detail">football-academy-rho.vercel.app</span>
+            </div>
+            <span class="channel-arrow">←</span>
+          </a>
+        </div>
+
+        <div class="contact-quick-note">
+          <p>⚡ الرد سريع خلال أقل من ساعتين في أيام العمل.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <div class="footer-brand">
+        <span class="footer-logo">Ahmed Medhat</span>
+        <p class="footer-copy">© 2026 جميع الحقوق محفوظة — مهندس برمجيات وتطبيقات ويب سحابية.</p>
+      </div>
+
+      <div class="footer-links">
+        <a href="#hero">الرئيسية</a>
+        <a href="#featured">المشروع البارز</a>
+        <a href="#architecture">الهندسة البرمجية</a>
+        <a href="#skills">المهارات</a>
+        <a href="#contact">تواصل معي</a>
+      </div>
+
+      <button id="backToTop" class="btn-top" title="العودة للأعلى">
+        <span>↑</span>
+      </button>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

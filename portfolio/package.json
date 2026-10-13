@@ -1,0 +1,9 @@
+{
+  "name": "ahmed-medhat-portfolio",
+  "version": "1.0.0",
+  "description": "Portfolio of Ahmed Medhat - Full Stack Engineer & Cloud Architect",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve ."
+  }
+}
