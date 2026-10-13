@@ -76,6 +76,10 @@ export function LoginForm() {
 
   const isLoading = isSubmitting || isPending;
 
+  const isVerifiedParam = searchParams.get("verified") === "true";
+  const isResetParam = searchParams.get("reset") === "success";
+  const isPendingParam = searchParams.get("confirmed") === "pending";
+
   return (
     <Card className="w-full max-w-md shadow-2xl border-slate-200/80 bg-white">
       <CardHeader className="text-center space-y-2 pb-6">
@@ -97,6 +101,27 @@ export function LoginForm() {
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {isVerifiedParam && (
+          <div className="flex items-center gap-2.5 rounded-xl bg-emerald-50 p-3 text-xs md:text-sm font-bold text-emerald-800 border border-emerald-200 text-start">
+            <span className="text-base">✅</span>
+            <span>تم تأكيد بريدك الإلكتروني بنجاح! يمكنك الآن تسجيل الدخول مباشرة.</span>
+          </div>
+        )}
+
+        {isResetParam && (
+          <div className="flex items-center gap-2.5 rounded-xl bg-emerald-50 p-3 text-xs md:text-sm font-bold text-emerald-800 border border-emerald-200 text-start">
+            <span className="text-base">✅</span>
+            <span>تم تغيير كلمة المرور بنجاح! يرجى تسجيل الدخول بكلمة المرور الجديدة.</span>
+          </div>
+        )}
+
+        {isPendingParam && (
+          <div className="flex items-center gap-2.5 rounded-xl bg-amber-50 p-3 text-xs md:text-sm font-bold text-amber-800 border border-amber-200 text-start">
+            <span className="text-base">✉️</span>
+            <span>تم إرسال رسالة تحقق إلى بريدك في Gmail. يرجى فتح الرسالة وتأكيد الحساب للمتابعة.</span>
+          </div>
+        )}
+
         {errorMessage && (
           <div className="flex items-center gap-2.5 rounded-xl bg-rose-50 p-3 text-xs md:text-sm font-semibold text-rose-700 border border-rose-200/80 text-start">
             <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
@@ -108,12 +133,12 @@ export function LoginForm() {
           {/* Email input */}
           <div className="space-y-1.5 text-start">
             <label className="text-xs font-bold text-slate-700">
-              {t.auth.email}
+              {t.auth.email} (Gmail)
             </label>
             <div className="relative">
               <Input
                 type="email"
-                placeholder="name@academy.com"
+                placeholder="name@gmail.com"
                 disabled={isLoading}
                 className={`pe-10 ${errors.email ? "border-rose-400 focus-visible:ring-rose-500" : ""}`}
                 {...register("email")}
@@ -133,9 +158,12 @@ export function LoginForm() {
               <label className="text-xs font-bold text-slate-700">
                 {t.auth.password}
               </label>
-              <span className="text-[11px] text-amber-600 hover:text-amber-700 hover:underline cursor-pointer">
-                {t.auth.forgotPassword}
-              </span>
+              <Link
+                href="/forgot-password"
+                className="text-[11px] font-bold text-amber-600 hover:text-amber-700 hover:underline transition-colors"
+              >
+                {t.auth.forgotPassword}؟
+              </Link>
             </div>
             <div className="relative">
               <Input

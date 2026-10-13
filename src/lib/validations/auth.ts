@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
+
 export const loginSchema = z.object({
   email: z
     .string()
@@ -19,7 +21,10 @@ export const registerSchema = z.object({
   email: z
     .string()
     .min(1, "يرجى إدخال البريد الإلكتروني")
-    .email("صيغة البريد الإلكتروني غير صحيحة"),
+    .email("صيغة البريد الإلكتروني غير صحيحة")
+    .refine((val) => gmailRegex.test(val.trim()), {
+      message: "يجب استخدام حساب Gmail حقيقي ينتهي بـ @gmail.com",
+    }),
   phone: z
     .string()
     .min(10, "رقم الهاتف غير صحيح (يجب أن يكون 10 أرقام على الأقل)"),
@@ -54,7 +59,10 @@ export const coachRegisterSchema = z.object({
   email: z
     .string()
     .min(1, "يرجى إدخال البريد الإلكتروني")
-    .email("صيغة البريد الإلكتروني غير صحيحة"),
+    .email("صيغة البريد الإلكتروني غير صحيحة")
+    .refine((val) => gmailRegex.test(val.trim()), {
+      message: "يجب استخدام حساب Gmail حقيقي ينتهي بـ @gmail.com",
+    }),
   phone: z.string().min(10, "رقم الهاتف غير صحيح (10 أرقام على الأقل)"),
   password: z.string().min(6, "كلمة المرور يجب أن لا تقل عن 6 أحرف"),
   specialization: z.string().min(2, "يرجى تحديد التخصص التدريبي"),
@@ -63,4 +71,29 @@ export const coachRegisterSchema = z.object({
 });
 
 export type CoachRegisterInput = z.infer<typeof coachRegisterSchema>;
+
+export const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .min(1, "يرجى إدخال عنوان بريد Gmail")
+    .email("صيغة البريد الإلكتروني غير صحيحة")
+    .refine((val) => gmailRegex.test(val.trim()), {
+      message: "يجب إدخال عنوان بريد Gmail حقيقي ينتهي بـ @gmail.com",
+    }),
+});
+
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+
+export const resetPasswordSchema = z
+  .object({
+    password: z.string().min(6, "كلمة المرور الجديدة يجب أن لا تقل عن 6 أحرف"),
+    confirmPassword: z.string().min(6, "يرجى إعادة كتابة كلمة المرور لتأكيدها"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "كلمتا المرور غير متطابقتين",
+    path: ["confirmPassword"],
+  });
+
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
 

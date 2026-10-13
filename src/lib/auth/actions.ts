@@ -8,9 +8,13 @@ import {
   loginSchema,
   registerSchema,
   trialBookingSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
   type LoginInput,
   type RegisterInput,
   type TrialBookingInput,
+  type ForgotPasswordInput,
+  type ResetPasswordInput,
 } from "@/lib/validations/auth";
 import { DEMO_USERS, type CurrentUser } from "@/lib/auth/session";
 import { getRoleDashboard } from "@/lib/auth/roles";
@@ -25,6 +29,8 @@ export interface AuthActionResult {
   success: boolean;
   error?: string;
   redirectTo?: string;
+  requiresEmailConfirmation?: boolean;
+  emailSentTo?: string;
 }
 
 const REGISTERED_USERS_COOKIE = "academy_registered_users";
@@ -195,6 +201,13 @@ export async function loginAction(data: LoginInput): Promise<AuthActionResult> {
     });
 
     if (error || !authData.user) {
+      const errStr = (error?.message || "").toLowerCase();
+      if (errStr.includes("email not confirmed") || errStr.includes("not verified")) {
+        return {
+          success: false,
+          error: "يرجى تأكيد حسابك أولاً! ✉️ تم إرسال رسالة تحقق وتأكيد إلى بريدك في Gmail، يرجى فتح الرسالة وتأكيد البريد لتتمكن من الدخول.",
+        };
+      }
       return {
         success: false,
         error: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
@@ -270,16 +283,18 @@ export async function registerAction(data: RegisterInput): Promise<AuthActionRes
   // Generate unique Parent ID
   const parentId = `parent-${Date.now()}`;
 
-  // 1. If Supabase is configured, create real authenticated user
+  // 1. If Supabase is configured, create real authenticated user and send verification email
   let supabaseUid: string | undefined;
+  let isAwaitingEmailConfirmation = false;
   try {
-    const adminClient = createAdminClient();
-    if (adminClient) {
-      const { data: sbUser, error: sbError } = await adminClient.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-        user_metadata: {
+    const supabase = await createClient();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://football-academy-rho.vercel.app";
+    const { data: sbAuth, error: sbError } = await supabase.auth.signUp({
+      email: email.trim().toLowerCase(),
+      password,
+      options: {
+        emailRedirectTo: `${siteUrl}/login?verified=true`,
+        data: {
           full_name: fullName,
           phone,
           role: "parent",
@@ -287,32 +302,21 @@ export async function registerAction(data: RegisterInput): Promise<AuthActionRes
           child_birth_date: childBirthDate,
           age_category: ageCategory,
         },
-      });
-      if (sbUser?.user) {
-        supabaseUid = sbUser.user.id;
-      } else if (sbError && sbError.message.toLowerCase().includes("already")) {
-        return { success: false, error: "البريد الإلكتروني مسجل بالفعل مسبقاً" };
+      },
+    });
+
+    if (sbError) {
+      const errMsg = sbError.message.toLowerCase();
+      if (errMsg.includes("already registered") || errMsg.includes("already exists")) {
+        return { success: false, error: "عنوان بريد Gmail هذا مسجل بالفعل مسبقاً" };
       }
-    } else {
-      const supabase = await createClient();
-      const { data: sbAuth, error: sbError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            phone,
-            role: "parent",
-            child_name: childName,
-            child_birth_date: childBirthDate,
-            age_category: ageCategory,
-          },
-        },
-      });
-      if (sbAuth?.user) {
-        supabaseUid = sbAuth.user.id;
-      } else if (sbError && sbError.message.toLowerCase().includes("already")) {
-        return { success: false, error: "البريد الإلكتروني مسجل بالفعل مسبقاً" };
+    }
+
+    if (sbAuth?.user) {
+      supabaseUid = sbAuth.user.id;
+      // If session is null, Supabase requires email verification
+      if (!sbAuth.session) {
+        isAwaitingEmailConfirmation = true;
       }
     }
   } catch (err) {
@@ -415,6 +419,14 @@ export async function registerAction(data: RegisterInput): Promise<AuthActionRes
     targetRole: "admin",
   });
 
+  if (isAwaitingEmailConfirmation) {
+    return {
+      success: true,
+      requiresEmailConfirmation: true,
+      emailSentTo: email,
+    };
+  }
+
   return {
     success: true,
     redirectTo: "/parent",
@@ -504,3 +516,89 @@ export async function logoutAction(): Promise<void> {
 
   redirect("/login");
 }
+
+/**
+ * Send password reset link to user's Gmail address via Supabase Auth
+ */
+export async function forgotPasswordAction(
+  data: ForgotPasswordInput
+): Promise<{ success: boolean; error?: string; message?: string }> {
+  const parsed = forgotPasswordSchema.safeParse(data);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message || "يرجى إدخال عنوان بريد Gmail صحيح ينتهي بـ @gmail.com",
+    };
+  }
+
+  const { email } = parsed.data;
+
+  try {
+    const supabase = await createClient();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://football-academy-rho.vercel.app";
+    
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: `${siteUrl}/reset-password`,
+    });
+
+    if (error) {
+      console.error("Supabase resetPasswordForEmail error:", error);
+      return {
+        success: false,
+        error: error.message || "حدث خطأ أثناء إرسال رابط إعادة تعيين كلمة المرور",
+      };
+    }
+
+    return {
+      success: true,
+      message: `تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك (${email}) بنجاح! ✉️ يرجى فتح Gmail وفحص البريد الوارد أو مجلد Spam.`,
+    };
+  } catch (err: any) {
+    console.error("forgotPasswordAction exception:", err);
+    return {
+      success: false,
+      error: "تعذر إرسال رسالة الاستعادة حالياً، يرجى المحاولة بعد قليل",
+    };
+  }
+}
+
+/**
+ * Update user password after clicking reset link from Gmail
+ */
+export async function resetPasswordAction(
+  data: ResetPasswordInput
+): Promise<{ success: boolean; error?: string }> {
+  const parsed = resetPasswordSchema.safeParse(data);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message || "بيانات كلمة المرور غير صحيحة",
+    };
+  }
+
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.updateUser({
+      password: parsed.data.password,
+    });
+
+    if (error) {
+      console.error("Supabase updateUser password error:", error);
+      return {
+        success: false,
+        error: error.message || "فشل تعيين كلمة المرور الجديدة، قد يكون الرابط منتهي الصلاحية",
+      };
+    }
+
+    return {
+      success: true,
+    };
+  } catch (err: any) {
+    console.error("resetPasswordAction exception:", err);
+    return {
+      success: false,
+      error: "حدث خطأ غير متوقع أثناء تحديث كلمة المرور",
+    };
+  }
+}
+

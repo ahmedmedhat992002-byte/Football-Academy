@@ -43,6 +43,8 @@ export function RegisterForm() {
   const [coachSubmitted, setCoachSubmitted] = useState<CoachProfile | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const [emailVerificationSent, setEmailVerificationSent] = useState<string | null>(null);
+
   // Parent Form
   const parentForm = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -75,9 +77,13 @@ export function RegisterForm() {
     setErrorMessage(null);
     startTransition(async () => {
       const result = await registerAction(data);
-      if (result.success && result.redirectTo) {
-        router.push(result.redirectTo);
-        router.refresh();
+      if (result.success) {
+        if (result.requiresEmailConfirmation) {
+          setEmailVerificationSent(result.emailSentTo || data.email);
+        } else if (result.redirectTo) {
+          router.push(result.redirectTo);
+          router.refresh();
+        }
       } else {
         setErrorMessage(result.error || "حدث خطأ أثناء إنشاء الحساب، يرجى المحاولة لاحقاً");
       }
@@ -99,6 +105,68 @@ export function RegisterForm() {
   const isLoading =
     isPending ||
     (accountType === "parent" ? parentForm.formState.isSubmitting : coachForm.formState.isSubmitting);
+
+  // If email verification was dispatched, show Email Verification confirmation view
+  if (emailVerificationSent) {
+    return (
+      <Card className="w-full max-w-lg shadow-2xl border-amber-500/40 bg-white text-start">
+        <CardHeader className="text-center space-y-3 pb-6 border-b border-slate-100">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/15 border-2 border-amber-500/30 text-amber-500 animate-pulse">
+            <Mail className="h-9 w-9" />
+          </div>
+          <CardTitle className="text-xl md:text-2xl font-black text-slate-900">
+            تحقق من بريدك لتفعيل الحساب! ✉️
+          </CardTitle>
+          <CardDescription className="text-xs md:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+            تم إرسال رابط تأكيد الحساب إلى عنوان بريدك الإلكتروني في Gmail:
+          </CardDescription>
+          <div className="inline-block mx-auto font-mono text-sm font-bold text-amber-800 bg-amber-100/90 px-4 py-1.5 rounded-full border border-amber-300">
+            {emailVerificationSent}
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-4 pt-5">
+          <div className="rounded-2xl bg-slate-50 border border-slate-200/80 p-4 space-y-3 text-xs leading-relaxed text-slate-700">
+            <p className="font-bold text-slate-900 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              خطوات تفعيل حسابك:
+            </p>
+            <ol className="list-decimal list-inside space-y-2 text-slate-600 ps-1">
+              <li>افتح تطبيق <strong>Gmail</strong> أو موقع <span className="font-mono text-amber-700 font-bold">mail.google.com</span>.</li>
+              <li>ابحث عن رسالة التأكيد من <strong>FIFA FC ACADEMY</strong>.</li>
+              <li>اضغط على رابط التحقق <strong>Confirm your email</strong>.</li>
+              <li>بعد تأكيد البريد، يمكنك تسجيل الدخول فوراً بالبريد وكلمة المرور.</li>
+            </ol>
+          </div>
+
+          <div className="rounded-xl bg-amber-50/80 border border-amber-200/80 p-3.5 text-xs text-amber-900 leading-relaxed">
+            <p className="font-bold mb-1">💡 تنبيه هام:</p>
+            <p>
+              إذا لم تجد الرسالة في صندوق الوارد (Inbox)، يرجى فحص مجلد <strong>الرسائل غير المرغوب فيها (Spam / Junk)</strong>.
+            </p>
+          </div>
+        </CardContent>
+
+        <CardFooter className="flex flex-col gap-2.5 pt-2 border-t border-slate-100">
+          <a
+            href="https://mail.google.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md transition-colors"
+          >
+            <span>فتح بريد Gmail الآن</span>
+            <ArrowRight className="w-4 h-4 rotate-180" />
+          </a>
+          <Link
+            href="/login"
+            className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs transition-colors"
+          >
+            <span>الانتقال لصفحة تسجيل الدخول</span>
+          </Link>
+        </CardFooter>
+      </Card>
+    );
+  }
 
   // If coach successfully submitted application, show Pending Approval confirmation view
   if (coachSubmitted) {

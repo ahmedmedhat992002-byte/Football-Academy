@@ -179,13 +179,14 @@ export async function registerCoachAction(
   // Register in Supabase Auth Cloud
   let supabaseUid: string | undefined;
   try {
-    const adminClient = createAdminClient();
-    if (adminClient) {
-      const { data: newSbUser, error: sbError } = await adminClient.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-        user_metadata: {
+    const supabase = await createClient();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://football-academy-rho.vercel.app";
+    const { data: sbAuth, error: sbError } = await supabase.auth.signUp({
+      email: email.trim().toLowerCase(),
+      password,
+      options: {
+        emailRedirectTo: `${siteUrl}/login?verified=true`,
+        data: {
           full_name: fullName,
           phone,
           specialization,
@@ -193,29 +194,16 @@ export async function registerCoachAction(
           role: "coach",
           status: "pending_approval",
         },
-      });
-      if (newSbUser?.user) {
-        supabaseUid = newSbUser.user.id;
+      },
+    });
+    if (sbError) {
+      const errMsg = sbError.message.toLowerCase();
+      if (errMsg.includes("already registered") || errMsg.includes("already exists")) {
+        return { success: false, error: "عنوان بريد Gmail هذا مسجل بالفعل مسبقاً لمدرب آخر" };
       }
-    } else {
-      const supabase = await createClient();
-      const { data: sbAuth } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            phone,
-            specialization,
-            experience_years: experienceYears,
-            role: "coach",
-            status: "pending_approval",
-          },
-        },
-      });
-      if (sbAuth?.user) {
-        supabaseUid = sbAuth.user.id;
-      }
+    }
+    if (sbAuth?.user) {
+      supabaseUid = sbAuth.user.id;
     }
   } catch (sbErr) {
     console.warn("Supabase coach signup fallback:", sbErr);
