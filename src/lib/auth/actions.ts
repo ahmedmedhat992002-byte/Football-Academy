@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   loginSchema,
   registerSchema,
@@ -200,12 +201,27 @@ export async function loginAction(data: LoginInput): Promise<AuthActionResult> {
       };
     }
 
-    const { data: profile } = await (supabase.from("profiles") as any)
-      .select("role, full_name")
-      .eq("id", authData.user.id)
-      .single();
+    let role: UserRole = (authData.user.user_metadata?.role as UserRole) || "parent";
+    let fullName = authData.user.user_metadata?.full_name || authData.user.email;
+    const coachStatus = authData.user.user_metadata?.status;
 
-    const role: UserRole = (profile?.role as UserRole) || "parent";
+    try {
+      const { data: profile } = await (supabase.from("profiles") as any)
+        .select("role, full_name")
+        .eq("id", authData.user.id)
+        .single();
+      if (profile?.role) role = profile.role as UserRole;
+      if (profile?.full_name) fullName = profile.full_name;
+    } catch {
+      // Profile table optional
+    }
+
+    if (role === "coach" && coachStatus === "pending_approval") {
+      return {
+        success: false,
+        error: "حساب الكابتن بانتظار اعتماد وموافقة مدير الأكاديمية.",
+      };
+    }
 
     // Set session cookie for consistency
     const cookieStore = await cookies();
@@ -214,7 +230,7 @@ export async function loginAction(data: LoginInput): Promise<AuthActionResult> {
       JSON.stringify({
         id: authData.user.id,
         email,
-        fullName: profile?.full_name || authData.user.email,
+        fullName,
         role,
       }),
       {
@@ -254,7 +270,56 @@ export async function registerAction(data: RegisterInput): Promise<AuthActionRes
   // Generate unique Parent ID
   const parentId = `parent-${Date.now()}`;
 
-  // 1. If Firebase is configured, register user in Firebase Auth & Firestore
+  // 1. If Supabase is configured, create real authenticated user
+  let supabaseUid: string | undefined;
+  try {
+    const adminClient = createAdminClient();
+    if (adminClient) {
+      const { data: sbUser, error: sbError } = await adminClient.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: fullName,
+          phone,
+          role: "parent",
+          child_name: childName,
+          child_birth_date: childBirthDate,
+          age_category: ageCategory,
+        },
+      });
+      if (sbUser?.user) {
+        supabaseUid = sbUser.user.id;
+      } else if (sbError && sbError.message.toLowerCase().includes("already")) {
+        return { success: false, error: "البريد الإلكتروني مسجل بالفعل مسبقاً" };
+      }
+    } else {
+      const supabase = await createClient();
+      const { data: sbAuth, error: sbError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            phone,
+            role: "parent",
+            child_name: childName,
+            child_birth_date: childBirthDate,
+            age_category: ageCategory,
+          },
+        },
+      });
+      if (sbAuth?.user) {
+        supabaseUid = sbAuth.user.id;
+      } else if (sbError && sbError.message.toLowerCase().includes("already")) {
+        return { success: false, error: "البريد الإلكتروني مسجل بالفعل مسبقاً" };
+      }
+    }
+  } catch (err) {
+    console.warn("Supabase signup fallback:", err);
+  }
+
+  // 2. If Firebase is configured, register user in Firebase Auth & Firestore
   let firebaseUid: string | undefined;
   if (isFirebaseConfigured) {
     try {

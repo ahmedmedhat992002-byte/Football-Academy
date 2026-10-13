@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { coachRegisterSchema, type CoachRegisterInput } from "@/lib/validations/auth";
 import { addNotification } from "@/lib/actions/notifications";
 import { createFirebaseUser } from "@/lib/firebase/auth-service";
@@ -113,6 +114,36 @@ export async function getCoaches(): Promise<CoachProfile[]> {
     // Fallback to local
   }
 
+  // 2. Try Supabase Auth Admin listUsers (works across all devices)
+  try {
+    const adminClient = createAdminClient();
+    if (adminClient) {
+      const { data: usersData, error: listError } = await adminClient.auth.admin.listUsers();
+      if (!listError && usersData?.users) {
+        const cloudCoaches: CoachProfile[] = usersData.users
+          .filter((u) => u.user_metadata?.role === "coach")
+          .map((u) => ({
+            id: u.id,
+            full_name: u.user_metadata?.full_name || u.email || "كابتن",
+            email: u.email || "",
+            phone: u.user_metadata?.phone || "غير محدد",
+            specialization: u.user_metadata?.specialization || "مدرب فني",
+            status: (u.user_metadata?.status as any) || "pending_approval",
+            experience_years: u.user_metadata?.experience_years || "غير محدد",
+            bio: u.user_metadata?.bio || "مدرب معتمد بالأكاديمية",
+            created_at: u.created_at,
+          }));
+
+        const stored = await getStoredCoaches();
+        const map = new Map<string, CoachProfile>();
+        [...INITIAL_COACHES, ...cloudCoaches, ...stored].forEach((c) => map.set(c.id, c));
+        return Array.from(map.values());
+      }
+    }
+  } catch {
+    // Fallback
+  }
+
   const fbCoaches = await getFirebaseCoaches();
   const stored = await getStoredCoaches();
   const map = new Map<string, CoachProfile>();
@@ -145,6 +176,51 @@ export async function registerCoachAction(
     };
   }
 
+  // Register in Supabase Auth Cloud
+  let supabaseUid: string | undefined;
+  try {
+    const adminClient = createAdminClient();
+    if (adminClient) {
+      const { data: newSbUser, error: sbError } = await adminClient.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: fullName,
+          phone,
+          specialization,
+          experience_years: experienceYears,
+          role: "coach",
+          status: "pending_approval",
+        },
+      });
+      if (newSbUser?.user) {
+        supabaseUid = newSbUser.user.id;
+      }
+    } else {
+      const supabase = await createClient();
+      const { data: sbAuth } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            phone,
+            specialization,
+            experience_years: experienceYears,
+            role: "coach",
+            status: "pending_approval",
+          },
+        },
+      });
+      if (sbAuth?.user) {
+        supabaseUid = sbAuth.user.id;
+      }
+    }
+  } catch (sbErr) {
+    console.warn("Supabase coach signup fallback:", sbErr);
+  }
+
   let firebaseUid: string | undefined;
   if (isFirebaseConfigured) {
     try {
@@ -168,7 +244,7 @@ export async function registerCoachAction(
   }
 
   const newCoach: CoachProfile = {
-    id: firebaseUid || `coach-${Date.now()}`,
+    id: supabaseUid || firebaseUid || `coach-${Date.now()}`,
     full_name: fullName,
     email: email.toLowerCase(),
     phone,
@@ -237,6 +313,18 @@ export async function approveCoachAction(
     await updateFirebaseCoachStatus(coachId, "approved");
   }
 
+  // Update in Supabase Auth
+  try {
+    const adminClient = createAdminClient();
+    if (adminClient) {
+      await adminClient.auth.admin.updateUserById(coachId, {
+        user_metadata: { status: "approved" },
+      });
+    }
+  } catch (err) {
+    console.warn("Supabase approve user fallback:", err);
+  }
+
   // Live notification to the coach
   await addNotification({
     title: "تم اعتماد حسابك التدريبي بنجاح! ⚽🎉",
@@ -277,6 +365,18 @@ export async function rejectCoachAction(
 
   if (isFirebaseConfigured) {
     await updateFirebaseCoachStatus(coachId, "rejected");
+  }
+
+  // Update in Supabase Auth
+  try {
+    const adminClient = createAdminClient();
+    if (adminClient) {
+      await adminClient.auth.admin.updateUserById(coachId, {
+        user_metadata: { status: "rejected" },
+      });
+    }
+  } catch (err) {
+    console.warn("Supabase reject user fallback:", err);
   }
 
   revalidatePath("/admin/coaches");
