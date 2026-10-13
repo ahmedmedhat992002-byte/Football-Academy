@@ -1,20 +1,20 @@
-# Ahmed Medhat — Full Stack Software Engineer Portfolio ⚡
+# Ahmed Medhat — Senior Full-Stack Software Engineer & Cloud Architect ⚡
 
-موقع البورتفوليو الشخصي للمهندس **أحمد مدحت (Ahmed Medhat)**.
+Personal developer portfolio for **Ahmed Medhat**.
 
-## 🚀 المميزات الرئيسية:
-- **المشروع الرئيسي البارز:** [FIFA FC ACADEMY](https://football-academy-rho.vercel.app)
-- **تصميم فاخر (Obsidian Luxury Dark & Gold):** متوافق 100% مع الهواتف والحواسيب.
-- **تبويبات تفاعلية للهندسة البرمجية (System Architecture):**
-  1. الأمان والمصادقة (Auth & RBAC)
-  2. قاعدة البيانات (PostgreSQL & RLS)
-  3. الملعب التكتيكي والحضور الفوري
-  4. النشر السحابي (Vercel CI/CD)
-- **قنوات اتصال مباشرة:** واتساب، بريد إلكتروني، ورابط المنصة الحية.
+## 🚀 Key Highlights:
+- **Flagship Project:** [FIFA FC ACADEMY Platform](https://football-academy-rho.vercel.app)
+- **Aesthetic:** Luxury Obsidian & Gold Dark Architecture with dynamic ambient glow.
+- **Interactive Deep Dive Tabs:**
+  1. Authentication & Security (Supabase Cloud RBAC, Gmail OTP verification, Google OAuth 2.0)
+  2. PostgreSQL Relational Schema & Non-Recursive Row-Level Security (RLS)
+  3. Real-Time Pitch Studio & Attendance Logging
+  4. Global Edge CI/CD Infrastructure (Vercel)
+- **Direct Connect Channels:** WhatsApp, Direct Email, and Live Academy URL.
 
-## 💻 طريقة التشغيل:
-1. يمكنك فتح ملف `index.html` في أي متصفح مباشرة بضغطة زر واحدة (Double Click).
-2. أو نشره على Vercel عبر تشغيل:
+## 💻 How to Run Locally:
+1. Double-click `index.html` in any browser to launch instantly.
+2. Or deploy directly to Vercel with:
    ```bash
    npx vercel --prod
    ```
