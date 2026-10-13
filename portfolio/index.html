@@ -1,590 +1,368 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ahmed Medhat | Senior Full-Stack Engineer & Cloud Architect</title>
-  <meta name="description" content="Portfolio of Ahmed Medhat - Senior Full-Stack Software Engineer & Cloud Architect specializing in Next.js 16, TypeScript, Supabase, and resilient PostgreSQL platforms.">
+  <title>Ahmed Medhat — Software Engineer</title>
+  <meta name="description" content="Personal portfolio of Ahmed Medhat. Full-stack web and mobile developer working with Next.js, Flutter, Supabase, Firebase, TypeScript, and C++.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👨‍💻</text></svg>">
 </head>
 <body>
 
-  <!-- Ambient Glowing Background Orbs -->
-  <div class="ambient-glow glow-1"></div>
-  <div class="ambient-glow glow-2"></div>
-  <div class="ambient-glow glow-3"></div>
+  <!-- Subtle Top Accent Border -->
+  <div class="top-accent"></div>
 
-  <!-- Header / Navigation Bar -->
-  <header class="navbar-wrapper">
-    <nav class="navbar">
-      <a href="#hero" class="brand-logo">
-        <span class="logo-badge">AM</span>
-        <div class="brand-text">
-          <span class="name">Ahmed Medhat</span>
-          <span class="title">Full-Stack & Cloud Architect</span>
+  <!-- Main Container -->
+  <main class="page-wrapper">
+
+    <!-- Header / Navigation -->
+    <header class="header">
+      <div class="header-left">
+        <span class="avatar-initials">AM</span>
+        <div>
+          <h1 class="header-name">Ahmed Medhat</h1>
+          <p class="header-title">Full-Stack & Mobile Software Engineer</p>
         </div>
-      </a>
-
-      <div class="nav-links">
-        <a href="#featured" class="nav-link">Flagship Project</a>
-        <a href="#architecture" class="nav-link">Architecture</a>
-        <a href="#projects" class="nav-link">Selected Work</a>
-        <a href="#skills" class="nav-link">Skills</a>
-        <a href="#contact" class="nav-link btn-contact-nav">Contact Me</a>
       </div>
 
-      <div class="nav-actions">
-        <a href="https://football-academy-rho.vercel.app" target="_blank" rel="noopener noreferrer" class="btn-live-header">
-          <span class="pulse-dot"></span>
-          <span>Live Demo ⚽</span>
-        </a>
-      </div>
-    </nav>
-  </header>
+      <nav class="header-nav">
+        <a href="#projects">Work</a>
+        <a href="#stack">Stack</a>
+        <a href="#about">About</a>
+        <a href="#contact" class="nav-contact">Contact</a>
+      </nav>
+    </header>
 
-  <!-- Hero Section -->
-  <section id="hero" class="hero-section">
-    <div class="container hero-container">
-      <div class="hero-badge">
-        <span class="badge-icon">🚀</span>
-        <span>Available for High-Impact Software Engineering & SaaS Projects</span>
+    <!-- Intro / Bio -->
+    <section class="intro-section">
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span>Available for software engineering roles & freelance projects</span>
       </div>
 
-      <h1 class="hero-title">
-        Architecting High-Performance Web Platforms &
-        <span class="gradient-text">Cloud Ecosystems</span>
-      </h1>
-
-      <p class="hero-subtitle">
-        Software Engineer specializing in scalable full-stack web applications with <strong>Next.js 16</strong>, <strong>TypeScript</strong>, <strong>Supabase</strong>, cross-platform mobile apps with <strong>Flutter & Dart</strong>, and core computer science fundamentals with <strong>C++</strong>, <strong>HTML5</strong>, and <strong>CSS3</strong>.
+      <p class="intro-lead">
+        I build production web platforms and mobile apps with clean architecture, fast interfaces, and secure backend systems.
       </p>
 
-      <div class="hero-cta-group">
-        <a href="#featured" class="btn-primary">
-          <span>Explore Flagship Project</span>
-          <span class="arrow">↓</span>
+      <p class="intro-sub">
+        My primary stack spans <strong>Next.js</strong>, <strong>TypeScript</strong>, <strong>Flutter</strong>, and cloud databases with <strong>Supabase</strong> and <strong>Firebase</strong>. I also bring strong software engineering foundations in <strong>C++</strong>, <strong>HTML5</strong>, and <strong>CSS3</strong>.
+      </p>
+
+      <div class="intro-actions">
+        <a href="https://football-academy-rho.vercel.app" target="_blank" rel="noopener noreferrer" class="btn-primary">
+          <span>Live Demo: FIFA FC Academy</span>
+          <span class="arrow-ext">↗</span>
         </a>
-        <a href="https://football-academy-rho.vercel.app" target="_blank" rel="noopener noreferrer" class="btn-secondary">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-          <span>Launch Live Platform</span>
-        </a>
-        <a href="#contact" class="btn-outline">
+        <a href="#contact" class="btn-secondary">
           <span>Get in Touch</span>
         </a>
       </div>
+    </section>
 
-      <!-- Key Performance Metrics -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-number">100%</div>
-          <div class="stat-label">Production-Ready Cloud Architecture</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number">&lt;50ms</div>
-          <div class="stat-label">Database Real-Time Query Latency</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number">Next.js 16</div>
-          <div class="stat-label">Turbopack & Modern App Router</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number">4 Roles</div>
-          <div class="stat-label">Multi-Tenant RBAC (Admin • Coach • Parent • Player)</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Featured Project Spotlight: FIFA FC ACADEMY -->
-  <section id="featured" class="featured-section">
-    <div class="container">
-      <div class="section-tag">
-        <span>🏆 Featured Production SaaS</span>
+    <!-- Featured Flagship Work -->
+    <section id="projects" class="section">
+      <div class="section-label">
+        <span class="mono">01 //</span>
+        <h2>Selected Work</h2>
       </div>
 
-      <div class="featured-header">
-        <div>
-          <h2 class="section-title">FIFA FC ACADEMY — Smart Sports Management Platform</h2>
-          <p class="section-desc">
-            An enterprise-grade SaaS platform built to unify academy operations, connecting administration, coaches, and parents into a real-time synchronized ecosystem.
-          </p>
-        </div>
-        <div class="featured-actions">
-          <a href="https://football-academy-rho.vercel.app" target="_blank" rel="noopener noreferrer" class="btn-gold-live">
-            <span>Launch Live Platform</span>
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-          </a>
-        </div>
-      </div>
-
-      <!-- Live Interactive Showcase Window -->
-      <div class="showcase-card">
-        <!-- Mockup Window Bar -->
-        <div class="mockup-header">
-          <div class="mac-dots">
-            <span class="dot red"></span>
-            <span class="dot yellow"></span>
-            <span class="dot green"></span>
-          </div>
-          <div class="mockup-url">
-            <span class="lock-icon">🔒</span>
-            <span>https://football-academy-rho.vercel.app</span>
-          </div>
-          <div class="mockup-badge">
-            <span class="pulse-green"></span>
-            <span>Live on Vercel Edge</span>
-          </div>
+      <!-- Project 1: FIFA FC Academy -->
+      <article class="project-box flagship">
+        <div class="project-meta">
+          <span class="project-tag live">Production SaaS</span>
+          <span class="project-year mono">2026</span>
         </div>
 
-        <!-- Project Visual & Specs -->
-        <div class="showcase-content">
-          <div class="showcase-media">
-            <div class="preview-banner">
-              <div class="preview-overlay">
-                <span class="preview-tag">⚽ FIFA FC ACADEMY v2.0</span>
-                <h3>Luxury Obsidian & Gold Sports Operating System</h3>
-                <p>Connected live to Supabase Cloud Authentication and optimized PostgreSQL database with zero recursion.</p>
-                <div class="quick-links-pills">
-                  <a href="https://football-academy-rho.vercel.app/admin" target="_blank" class="pill">Admin Dashboard</a>
-                  <a href="https://football-academy-rho.vercel.app/coach" target="_blank" class="pill">Coach Studio</a>
-                  <a href="https://football-academy-rho.vercel.app/parent" target="_blank" class="pill">Parent Portal</a>
-                  <a href="https://football-academy-rho.vercel.app/login" target="_blank" class="pill">Sign In</a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="showcase-specs">
-            <h4 class="specs-heading">Key Technical Achievements:</h4>
-
-            <div class="spec-list">
-              <div class="spec-item">
-                <div class="spec-icon">⚡</div>
-                <div class="spec-body">
-                  <h5>Next.js 16 & Turbopack Architecture</h5>
-                  <p>Hybrid SSR/ISR rendering pipeline delivering instant first-contentful paint and top SEO scores.</p>
-                </div>
-              </div>
-
-              <div class="spec-item">
-                <div class="spec-icon">🔐</div>
-                <div class="spec-body">
-                  <h5>Supabase Auth & Gmail Verification</h5>
-                  <p>Strict Gmail validation, automated confirmation email dispatch, and secure password reset workflows.</p>
-                </div>
-              </div>
-
-              <div class="spec-item">
-                <div class="spec-icon">🛡️</div>
-                <div class="spec-body">
-                  <h5>PostgreSQL Row Level Security (RLS)</h5>
-                  <p>Granular data isolation ensuring parents, coaches, and administrators access strictly authorized records.</p>
-                </div>
-              </div>
-
-              <div class="spec-item">
-                <div class="spec-icon">📋</div>
-                <div class="spec-body">
-                  <h5>Tactical Pitch Board & Attendance Logging</h5>
-                  <p>Visual soccer pitch strategy designer with real-time session attendance and 5-axis player skill grading.</p>
-                </div>
-              </div>
-
-              <div class="spec-item">
-                <div class="spec-icon">💳</div>
-                <div class="spec-body">
-                  <h5>Subscription Plans & Financial Auditing</h5>
-                  <p>Tiered membership plans, payment tracking, and automated revenue ledger for academy administrators.</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="tech-tags-cloud">
-              <span class="tag">Next.js 16</span>
-              <span class="tag">React 19</span>
-              <span class="tag">TypeScript</span>
-              <span class="tag">Supabase</span>
-              <span class="tag">PostgreSQL</span>
-              <span class="tag">Google OAuth</span>
-              <span class="tag">Vercel Edge</span>
-              <span class="tag">Tailwind CSS</span>
-              <span class="tag">Turbopack</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Interactive System Architecture Breakdown -->
-  <section id="architecture" class="arch-section">
-    <div class="container">
-      <div class="section-tag">
-        <span>⚙️ Engineering Deep Dive</span>
-      </div>
-      <h2 class="section-title">System Architecture & Technical Design</h2>
-      <p class="section-desc">
-        A resilient multi-tier architecture separating interactive client interfaces, server actions, and a fortified cloud database.
-      </p>
-
-      <div class="arch-tabs">
-        <button class="tab-btn active" data-tab="tab-auth">1. Auth & Security (RBAC)</button>
-        <button class="tab-btn" data-tab="tab-db">2. Database (Postgres & RLS)</button>
-        <button class="tab-btn" data-tab="tab-realtime">3. Real-Time Pitch & Attendance</button>
-        <button class="tab-btn" data-tab="tab-deployment">4. Cloud Deployment (CI/CD)</button>
-      </div>
-
-      <div class="arch-content">
-        <!-- Tab 1 -->
-        <div id="tab-auth" class="tab-pane active">
-          <div class="tab-card">
-            <div class="tab-card-header">
-              <span class="tab-badge">Supabase Auth Cloud</span>
-              <h3>Multi-Tier Authentication & Access Governance</h3>
-            </div>
-            <div class="tab-grid">
-              <div class="feature-box">
-                <h4>🔑 Real Gmail Verification</h4>
-                <p>Enforced @gmail.com validation with automated confirmation links sent directly to user inboxes before granting sign-in.</p>
-              </div>
-              <div class="feature-box">
-                <h4>🌐 Google OAuth 2.0</h4>
-                <p>One-click instant login and registration with token exchange handled through the dedicated <code>/auth/callback</code> route.</p>
-              </div>
-              <div class="feature-box">
-                <h4>⏳ Coach Administrative Approval</h4>
-                <p>New coach registrations are placed in a pending verification queue until authorized and assigned squads by the head admin.</p>
-              </div>
-              <div class="feature-box">
-                <h4>🔄 Encrypted Password Recovery</h4>
-                <p>Time-sensitive password reset tokens dispatched securely to user emails with dedicated client reset views.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 2 -->
-        <div id="tab-db" class="tab-pane">
-          <div class="tab-card">
-            <div class="tab-card-header">
-              <span class="tab-badge">PostgreSQL Schema & Security</span>
-              <h3>Relational Schema with Non-Recursive RLS Policies</h3>
-            </div>
-            <div class="tab-grid">
-              <div class="feature-box">
-                <h4>📊 8 Core Relational Tables</h4>
-                <p>Engineered schemas for profiles, groups, players, sessions, attendance, evaluations, subscriptions, and notifications.</p>
-              </div>
-              <div class="feature-box">
-                <h4>🛡️ Fortified Row-Level Security</h4>
-                <p>Strict access boundaries: parents view their registered children, coaches view assigned groups, and admins audit the whole academy.</p>
-              </div>
-              <div class="feature-box">
-                <h4>⚡ Recursion-Free Optimization</h4>
-                <p>Eliminated circular policy references between groups and players tables for instantaneous 200 OK query performance.</p>
-              </div>
-              <div class="feature-box">
-                <h4>💾 Resilient Dual Synchronization</h4>
-                <p>Seamless bridge between cloud Supabase data and failover caching ensuring 100% platform uptime.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 3 -->
-        <div id="tab-realtime" class="tab-pane">
-          <div class="tab-card">
-            <div class="tab-card-header">
-              <span class="tab-badge">Interactive Pitch & Coach Tools</span>
-              <h3>Tactical Strategy Board & Live Attendance Studio</h3>
-            </div>
-            <div class="tab-grid">
-              <div class="feature-box">
-                <h4>⚽ Visual Tactical Board</h4>
-                <p>Interactive formation whiteboard enabling head coaches to position players, draw strategies, and simulate match lineups.</p>
-              </div>
-              <div class="feature-box">
-                <h4>⏱️ One-Tap Attendance Check</h4>
-                <p>Real-time player presence tracking per training session with cumulative attendance analytics generated on the fly.</p>
-              </div>
-              <div class="feature-box">
-                <h4>📈 5-Axis Performance Grading</h4>
-                <p>Comprehensive player scorecards analyzing technical skill, physical conditioning, tactical IQ, commitment, and sportsmanship.</p>
-              </div>
-              <div class="feature-box">
-                <h4>🔔 Real-Time Event Dispatcher</h4>
-                <p>Instant notifications pushed to the administrator whenever a new player registers, coach applies, or trial session is booked.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 4 -->
-        <div id="tab-deployment" class="tab-pane">
-          <div class="tab-card">
-            <div class="tab-card-header">
-              <span class="tab-badge">Vercel Production & CI/CD</span>
-              <h3>High-Availability Edge Infrastructure</h3>
-            </div>
-            <div class="tab-grid">
-              <div class="feature-box">
-                <h4>🌐 Edge Global CDN</h4>
-                <p>Assets and serverless functions replicated across international points of presence for minimal latency worldwide.</p>
-              </div>
-              <div class="feature-box">
-                <h4>🚀 Automated CI/CD Workflows</h4>
-                <p>Continuous integration via Git commits, automated Turbopack builds, and instant zero-downtime deployments on Vercel.</p>
-              </div>
-              <div class="feature-box">
-                <h4>📦 MinGit Integration</h4>
-                <p>Clean version tracking and modular commit history documenting all milestones and architectural iterations.</p>
-              </div>
-              <div class="feature-box">
-                <h4>📱 Fully Responsive Across Devices</h4>
-                <p>Fluid user experience engineered for mobile handsets, iPads, and ultra-wide desktop workstations.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Selected Work & Case Studies -->
-  <section id="projects" class="projects-section">
-    <div class="container">
-      <div class="section-tag">
-        <span>💼 Selected Projects</span>
-      </div>
-      <h2 class="section-title">Featured Engineering Case Studies</h2>
-      <p class="section-desc">A selection of modern web platforms and enterprise software solutions engineered to scale.</p>
-
-      <div class="projects-grid">
-        <!-- Project 1 -->
-        <div class="project-card">
-          <div class="project-header">
-            <span class="project-badge">Sports ERP • Flagship</span>
-            <span class="project-year">2026</span>
-          </div>
-          <h3 class="project-name">FIFA FC ACADEMY Platform</h3>
-          <p class="project-desc">
-            Complete management SaaS for professional football academies with real-time attendance, tactical board, and Supabase backend.
-          </p>
-          <div class="project-tech">
-            <span>Next.js 16</span>
-            <span>TypeScript</span>
-            <span>Supabase</span>
-            <span>PostgreSQL</span>
-          </div>
-          <a href="https://football-academy-rho.vercel.app" target="_blank" class="project-link">
-            <span>Visit Live Platform</span>
-            <span>↗</span>
+        <div class="project-header">
+          <h3 class="project-title">FIFA FC ACADEMY — Sports Management Platform</h3>
+          <a href="https://football-academy-rho.vercel.app" target="_blank" rel="noopener noreferrer" class="project-live-link">
+            <span>football-academy-rho.vercel.app</span>
+            <span class="arrow-ext">↗</span>
           </a>
         </div>
 
-        <!-- Project 2: Flutter Cross-Platform Mobile App -->
-        <div class="project-card">
-          <div class="project-header">
-            <span class="project-badge">Mobile App • Flutter & Dart</span>
-            <span class="project-year">2026</span>
-          </div>
-          <h3 class="project-name">Cross-Platform Flutter Mobile Application</h3>
-          <p class="project-desc">
-            High-performance cross-platform mobile application engineered with Flutter & Dart for iOS and Android, featuring smooth 60fps animations, reactive state management, REST API integration, and offline-first data caching.
-          </p>
-          <div class="project-tech">
-            <span>Flutter</span>
-            <span>Dart</span>
-            <span>Android</span>
-            <span>iOS</span>
-            <span>REST APIs</span>
-            <span>State Management</span>
-          </div>
-          <span class="project-status">Production Mobile Build 📱</span>
-        </div>
-
-        <!-- Project 3 -->
-        <div class="project-card">
-          <div class="project-header">
-            <span class="project-badge">FinTech SaaS</span>
-            <span class="project-year">2025</span>
-          </div>
-          <h3 class="project-name">NovaPay — Payment & Billing Hub</h3>
-          <p class="project-desc">
-            Recurring subscription billing infrastructure, digital wallet management, and real-time transaction reconciliation dashboard.
-          </p>
-          <div class="project-tech">
-            <span>React</span>
-            <span>Node.js</span>
-            <span>REST APIs</span>
-            <span>Tailwind</span>
-          </div>
-          <span class="project-status">Production Verified</span>
-        </div>
-
-        <!-- Project 4 -->
-        <div class="project-card">
-          <div class="project-header">
-            <span class="project-badge">Cloud Telematics</span>
-            <span class="project-year">2025</span>
-          </div>
-          <h3 class="project-name">Apex Fleet & Logistics Platform</h3>
-          <p class="project-desc">
-            Real-time GPS vehicle tracking, automated route optimization, fuel telemetry logging, and enterprise driver dispatch engine.
-          </p>
-          <div class="project-tech">
-            <span>Next.js</span>
-            <span>PostgreSQL</span>
-            <span>WebSockets</span>
-            <span>Mapbox</span>
-          </div>
-          <span class="project-status">Production Verified</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Technical Skills Arsenal -->
-  <section id="skills" class="skills-section">
-    <div class="container">
-      <div class="section-tag">
-        <span>🛠️ Technical Arsenal</span>
-      </div>
-      <h2 class="section-title">Core Technologies & Proficiencies</h2>
-      <p class="section-desc">Extensive software engineering stack spanning modern web, cross-platform mobile, backend systems, and computer science fundamentals.</p>
-
-      <div class="skills-grid">
-        <!-- Category 1: Web & Frontend Core -->
-        <div class="skill-category">
-          <div class="category-icon">🎨</div>
-          <h3>Web & Frontend Core</h3>
-          <ul class="skill-list">
-            <li><strong>HTML5</strong> — Semantic markup, accessibility (a11y), and SEO architecture</li>
-            <li><strong>CSS3</strong> — Modern Flexbox, Grid, custom animations, and responsive design</li>
-            <li><strong>Next.js 16 (App Router)</strong> — Server Components, SSR/ISR, Turbopack</li>
-            <li><strong>React 19 & Hooks</strong> — Dynamic, reactive, and stateful user interfaces</li>
-            <li><strong>TypeScript & JavaScript (ESNext)</strong> — Robust type-safe architecture</li>
-          </ul>
-        </div>
-
-        <!-- Category 2: Mobile & Core Systems -->
-        <div class="skill-category">
-          <div class="category-icon">📱</div>
-          <h3>Mobile & Core Programming</h3>
-          <ul class="skill-list">
-            <li><strong>Flutter & Dart</strong> — Cross-platform iOS & Android native mobile apps</li>
-            <li><strong>C++ (OOP & Algorithms)</strong> — Object-Oriented Programming, memory management</li>
-            <li><strong>Data Structures & Algorithms</strong> — Problem solving and computational efficiency</li>
-            <li><strong>State Management</strong> — Reactive app architecture (BLoC, Provider, Riverpod)</li>
-            <li><strong>Clean Architecture</strong> — Modular, scalable, and testable codebases</li>
-          </ul>
-        </div>
-
-        <!-- Category 3: Backend & Cloud Data -->
-        <div class="skill-category">
-          <div class="category-icon">⚙️</div>
-          <h3>Backend & Cloud Data</h3>
-          <ul class="skill-list">
-            <li><strong>Supabase Cloud</strong> — Managed Auth, real-time database, and storage</li>
-            <li><strong>PostgreSQL & SQL Migrations</strong> — Relational modeling & RLS security</li>
-            <li><strong>Node.js & Server Actions</strong> — Resilient server logic and API integration</li>
-            <li><strong>Firebase Services</strong> — Cloud Firestore, push messaging, and Auth</li>
-            <li><strong>RESTful & RPC APIs</strong> — High-throughput network endpoints</li>
-          </ul>
-        </div>
-
-        <!-- Category 4: DevOps & Cloud Infrastructure -->
-        <div class="skill-category">
-          <div class="category-icon">🚀</div>
-          <h3>DevOps & Cloud Systems</h3>
-          <ul class="skill-list">
-            <li><strong>Vercel Global Edge CDN</strong> — Automated deployments & custom domains</li>
-            <li><strong>Git & GitHub</strong> — Version control, branching strategies, and CI/CD</li>
-            <li><strong>Turbopack & Webpack</strong> — High-speed build and bundling pipelines</li>
-            <li><strong>Google Cloud Console</strong> — OAuth 2.0 credentials & API governance</li>
-            <li><strong>Web Performance Optimization</strong> — 99+ Core Web Vitals and Lighthouse</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Contact & Collaboration Section -->
-  <section id="contact" class="contact-section">
-    <div class="container contact-container">
-      <div class="contact-card">
-        <div class="contact-badge">
-          <span>📬 Let's Connect</span>
-        </div>
-        <h2 class="contact-title">Have an ambitious project in mind?<br>Let's build something extraordinary.</h2>
-        <p class="contact-desc">
-          I'm available for high-impact software engineering contracts, SaaS platform development, and enterprise web solutions.
+        <p class="project-description">
+          A multi-tenant management platform built for soccer academies. Connects administration, coaches, and parents into a single real-time dashboard. Features match tactics whiteboard, live session attendance, player evaluations, and subscription payment tracking.
         </p>
 
-        <div class="contact-channels">
-          <!-- WhatsApp -->
-          <a href="https://wa.me/201012345678" target="_blank" rel="noopener noreferrer" class="channel-card whatsapp">
-            <div class="channel-icon">💬</div>
-            <div class="channel-info">
-              <span class="channel-name">WhatsApp</span>
-              <span class="channel-detail">Instant Direct Chat</span>
-            </div>
-            <span class="channel-arrow">→</span>
-          </a>
-
-          <!-- Email -->
-          <a href="mailto:ahmedmedhat992002@gmail.com" class="channel-card email">
-            <div class="channel-icon">✉️</div>
-            <div class="channel-info">
-              <span class="channel-name">Email</span>
-              <span class="channel-detail">ahmedmedhat992002@gmail.com</span>
-            </div>
-            <span class="channel-arrow">→</span>
-          </a>
-
-          <!-- Live Website Link -->
-          <a href="https://football-academy-rho.vercel.app" target="_blank" rel="noopener noreferrer" class="channel-card academy">
-            <div class="channel-icon">⚽</div>
-            <div class="channel-info">
-              <span class="channel-name">FIFA FC ACADEMY</span>
-              <span class="channel-detail">football-academy-rho.vercel.app</span>
-            </div>
-            <span class="channel-arrow">→</span>
-          </a>
+        <!-- Technical Implementation Highlights -->
+        <div class="implementation-grid">
+          <div class="impl-item">
+            <span class="impl-label mono">Backend & DB</span>
+            <p><strong>Supabase (PostgreSQL)</strong> with customized Row Level Security (RLS) policies, real-time sync, and non-recursive queries.</p>
+          </div>
+          <div class="impl-item">
+            <span class="impl-label mono">Auth & Security</span>
+            <p>Real Gmail verification, Supabase password recovery flows, Google OAuth 2.0, and coach approval governance.</p>
+          </div>
+          <div class="impl-item">
+            <span class="impl-label mono">Frontend Architecture</span>
+            <p><strong>Next.js 16</strong> App Router with Turbopack, React 19 Server Components, and zero-compromise responsive design.</p>
+          </div>
+          <div class="impl-item">
+            <span class="impl-label mono">Deployment & Edge</span>
+            <p>Automated CI/CD via Git to <strong>Vercel Global Edge CDN</strong> with sub-second page loads worldwide.</p>
+          </div>
         </div>
 
-        <div class="contact-quick-note">
-          <p>⚡ Typical response time: under 2 hours on business days.</p>
+        <!-- Tech Pills -->
+        <div class="tech-pills">
+          <span class="pill">Next.js 16</span>
+          <span class="pill">TypeScript</span>
+          <span class="pill">Supabase</span>
+          <span class="pill">PostgreSQL</span>
+          <span class="pill">Google OAuth</span>
+          <span class="pill">Vercel</span>
+        </div>
+      </article>
+
+      <!-- Project 2: Flutter Mobile Application -->
+      <article class="project-box">
+        <div class="project-meta">
+          <span class="project-tag">Mobile App</span>
+          <span class="project-year mono">2026</span>
+        </div>
+
+        <div class="project-header">
+          <h3 class="project-title">Cross-Platform Mobile Application</h3>
+          <span class="platform-badge mono">iOS & Android</span>
+        </div>
+
+        <p class="project-description">
+          Engineered using Flutter and Dart. Designed with clean architecture, reactive state management, and offline-first local caching. Seamlessly consumes RESTful APIs and Firebase cloud services for real-time data persistence.
+        </p>
+
+        <div class="implementation-grid two-col">
+          <div class="impl-item">
+            <span class="impl-label mono">Mobile Framework</span>
+            <p><strong>Flutter & Dart</strong>: smooth 60fps native performance, adaptive layouts, and custom widget trees.</p>
+          </div>
+          <div class="impl-item">
+            <span class="impl-label mono">Cloud & State</span>
+            <p><strong>Firebase & REST APIs</strong> with BLoC / Provider state architecture and offline SQLite/Hive caching.</p>
+          </div>
+        </div>
+
+        <div class="tech-pills">
+          <span class="pill">Flutter</span>
+          <span class="pill">Dart</span>
+          <span class="pill">Firebase</span>
+          <span class="pill">REST APIs</span>
+          <span class="pill">State Management</span>
+        </div>
+      </article>
+
+      <!-- Project 3: NovaPay FinTech -->
+      <article class="project-box">
+        <div class="project-meta">
+          <span class="project-tag">Web App</span>
+          <span class="project-year mono">2025</span>
+        </div>
+
+        <div class="project-header">
+          <h3 class="project-title">NovaPay — Billing & Transactions Hub</h3>
+        </div>
+
+        <p class="project-description">
+          A financial dashboard for recurring customer subscriptions, automated invoicing, transaction auditing, and analytics tracking with modular REST endpoints.
+        </p>
+
+        <div class="tech-pills">
+          <span class="pill">React</span>
+          <span class="pill">Node.js</span>
+          <span class="pill">PostgreSQL</span>
+          <span class="pill">REST APIs</span>
+        </div>
+      </article>
+    </section>
+
+    <!-- Technical Stack & Skills -->
+    <section id="stack" class="section">
+      <div class="section-label">
+        <span class="mono">02 //</span>
+        <h2>Skills & Technologies</h2>
+      </div>
+
+      <p class="section-intro">
+        The technologies and tools I work with daily to design, code, and deploy production software:
+      </p>
+
+      <div class="stack-grid">
+        <!-- Card 1: Cloud Databases & Backend -->
+        <div class="stack-card">
+          <div class="stack-card-header">
+            <span class="mono category-title">Backend & Cloud Databases</span>
+          </div>
+          <ul class="skill-entries">
+            <li>
+              <span class="skill-name">Supabase</span>
+              <span class="skill-desc">Managed PostgreSQL, Row Level Security (RLS), Supabase Auth, real-time listeners, SQL migrations.</span>
+            </li>
+            <li>
+              <span class="skill-name">Firebase</span>
+              <span class="skill-desc">Cloud Firestore database design, Firebase Auth, Cloud Storage, and offline persistence.</span>
+            </li>
+            <li>
+              <span class="skill-name">PostgreSQL</span>
+              <span class="skill-desc">Relational schemas, indexes, complex queries, foreign keys, and access policy tuning.</span>
+            </li>
+            <li>
+              <span class="skill-name">Node.js & APIs</span>
+              <span class="skill-desc">Server Actions, RESTful endpoints, API route handlers, and middleware logic.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Card 2: Mobile & Core Programming -->
+        <div class="stack-card">
+          <div class="stack-card-header">
+            <span class="mono category-title">Mobile & Systems Programming</span>
+          </div>
+          <ul class="skill-entries">
+            <li>
+              <span class="skill-name">Flutter & Dart</span>
+              <span class="skill-desc">Cross-platform iOS and Android apps, clean architecture, responsive layouts, native API bridges.</span>
+            </li>
+            <li>
+              <span class="skill-name">C++</span>
+              <span class="skill-desc">Object-Oriented Programming (OOP), pointers, memory management, and data structures.</span>
+            </li>
+            <li>
+              <span class="skill-name">Algorithms & Problem Solving</span>
+              <span class="skill-desc">Computational complexity (Big-O), search/sort algorithms, and optimized logic.</span>
+            </li>
+            <li>
+              <span class="skill-name">State Management</span>
+              <span class="skill-desc">Reactive patterns with BLoC, Provider, Riverpod, and React state hooks.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Card 3: Web & Frontend -->
+        <div class="stack-card">
+          <div class="stack-card-header">
+            <span class="mono category-title">Frontend & Web Core</span>
+          </div>
+          <ul class="skill-entries">
+            <li>
+              <span class="skill-name">HTML5</span>
+              <span class="skill-desc">Semantic document outline, web accessibility (a11y), clean DOM structure, and SEO standards.</span>
+            </li>
+            <li>
+              <span class="skill-name">CSS3</span>
+              <span class="skill-desc">Modern Flexbox, Grid, custom properties, responsive media queries, and performant animations.</span>
+            </li>
+            <li>
+              <span class="skill-name">Next.js 16</span>
+              <span class="skill-desc">App Router architecture, React Server Components (RSC), Turbopack, and SSR/ISR pipelines.</span>
+            </li>
+            <li>
+              <span class="skill-name">TypeScript</span>
+              <span class="skill-desc">Strict typing, interfaces, type inference, and scalable codebase maintainability.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Card 4: DevOps & Tooling -->
+        <div class="stack-card">
+          <div class="stack-card-header">
+            <span class="mono category-title">DevOps & Tooling</span>
+          </div>
+          <ul class="skill-entries">
+            <li>
+              <span class="skill-name">Git & GitHub</span>
+              <span class="skill-desc">Modular version control, branch management, merge reviews, and clean commit history.</span>
+            </li>
+            <li>
+              <span class="skill-name">Vercel</span>
+              <span class="skill-desc">Production deployments, edge network distribution, environment secrets, and custom domains.</span>
+            </li>
+            <li>
+              <span class="skill-name">Google Cloud Console</span>
+              <span class="skill-desc">OAuth 2.0 client configurations, authorized redirect URIs, and cloud credentials.</span>
+            </li>
+            <li>
+              <span class="skill-name">Performance Optimization</span>
+              <span class="skill-desc">Lighthouse auditing, minimal bundle sizes, image optimization, and fast Core Web Vitals.</span>
+            </li>
+          </ul>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container footer-container">
-      <div class="footer-brand">
-        <span class="footer-logo">Ahmed Medhat</span>
-        <p class="footer-copy">© 2026 All rights reserved. Senior Full-Stack Engineer & Cloud Architect.</p>
+    <!-- Engineering Principles / About -->
+    <section id="about" class="section">
+      <div class="section-label">
+        <span class="mono">03 //</span>
+        <h2>Engineering Principles</h2>
       </div>
 
-      <div class="footer-links">
-        <a href="#hero">Home</a>
-        <a href="#featured">Featured Project</a>
-        <a href="#architecture">Architecture</a>
-        <a href="#skills">Skills</a>
-        <a href="#contact">Contact</a>
+      <div class="principles-grid">
+        <div class="principle-item">
+          <span class="mono principle-num">01.</span>
+          <h4>Data Integrity & Security First</h4>
+          <p>I design relational schemas with strict constraints and Row-Level Security (RLS) from day one. Security is baked into the database layer, not left as an afterthought.</p>
+        </div>
+        <div class="principle-item">
+          <span class="mono principle-num">02.</span>
+          <h4>Zero Bloat & Fast Runtime</h4>
+          <p>Whether writing Next.js Server Components, Flutter widgets, or C++ algorithms, I prioritize lightweight architectures that keep latency under 50ms and bundle sizes lean.</p>
+        </div>
+        <div class="principle-item">
+          <span class="mono principle-num">03.</span>
+          <h4>Human-Crafted Quality</h4>
+          <p>I value clean code, thoughtful typography, and intuitive user experiences. Every component is built with deliberate structure and long-term maintainability.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section contact-section">
+      <div class="section-label">
+        <span class="mono">04 //</span>
+        <h2>Get in Touch</h2>
       </div>
 
-      <button id="backToTop" class="btn-top" title="Back to top">
-        <span>↑</span>
-      </button>
-    </div>
-  </footer>
+      <div class="contact-box">
+        <p class="contact-prompt">
+          Have an engineering project, a SaaS idea, or looking for a full-stack engineer? Feel free to reach out directly:
+        </p>
+
+        <div class="contact-links-grid">
+          <a href="mailto:ahmedmedhat992002@gmail.com" class="contact-tile">
+            <span class="mono tile-type">EMAIL</span>
+            <span class="tile-val">ahmedmedhat992002@gmail.com</span>
+            <span class="arrow-ext">↗</span>
+          </a>
+
+          <a href="https://wa.me/201012345678" target="_blank" rel="noopener noreferrer" class="contact-tile">
+            <span class="mono tile-type">WHATSAPP</span>
+            <span class="tile-val">Chat on WhatsApp</span>
+            <span class="arrow-ext">↗</span>
+          </a>
+
+          <a href="https://football-academy-rho.vercel.app" target="_blank" rel="noopener noreferrer" class="contact-tile">
+            <span class="mono tile-type">LIVE PROJECT</span>
+            <span class="tile-val">FIFA FC ACADEMY Platform</span>
+            <span class="arrow-ext">↗</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p class="footer-text mono">
+        Designed & coded by Ahmed Medhat © 2026. Built with HTML5, CSS3, and JavaScript.
+      </p>
+      <a href="#" class="back-to-top mono">Back to top ↑</a>
+    </footer>
+
+  </main>
 
   <script src="app.js"></script>
 </body>
