@@ -2,6 +2,8 @@
 
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { isFirebaseConfigured } from "@/lib/firebase/config";
+import { getFirebaseNotifications, addFirebaseNotification } from "@/lib/firebase/firestore-service";
 
 export interface SystemNotification {
   id: string;
@@ -51,6 +53,20 @@ export async function getNotifications(userRole: "admin" | "coach" | "parent" = 
     allNotifications = DEFAULT_NOTIFICATIONS;
   }
 
+  // If Firebase is configured, merge cloud notifications so all devices get them
+  if (isFirebaseConfigured) {
+    try {
+      const fbNotifs = await getFirebaseNotifications(userRole);
+      if (fbNotifs.length > 0) {
+        const notifMap = new Map<string, SystemNotification>();
+        [...fbNotifs, ...allNotifications].forEach((n) => notifMap.set(n.id || n.title, n));
+        allNotifications = Array.from(notifMap.values());
+      }
+    } catch (fbErr) {
+      console.warn("Firestore notification fetch fallback:", fbErr);
+    }
+  }
+
   // Filter notifications relevant to this user role
   return allNotifications.filter(
     (n) => !n.targetRole || n.targetRole === "all" || n.targetRole === userRole
@@ -77,6 +93,15 @@ export async function addNotification(notification: Omit<SystemNotification, "id
     sameSite: "lax",
     maxAge: 60 * 60 * 24 * 30, // 30 days
   });
+
+  // Persist to Cloud Firestore for cross-device alerts
+  if (isFirebaseConfigured) {
+    try {
+      await addFirebaseNotification(newNotification);
+    } catch (fbErr) {
+      console.warn("Firestore addNotification fallback:", fbErr);
+    }
+  }
 
   revalidatePath("/", "layout");
 }

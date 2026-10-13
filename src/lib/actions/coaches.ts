@@ -7,6 +7,11 @@ import { coachRegisterSchema, type CoachRegisterInput } from "@/lib/validations/
 import { addNotification } from "@/lib/actions/notifications";
 import { createFirebaseUser } from "@/lib/firebase/auth-service";
 import { isFirebaseConfigured } from "@/lib/firebase/config";
+import {
+  getFirebaseCoaches,
+  saveFirebaseCoach,
+  updateFirebaseCoachStatus,
+} from "@/lib/firebase/firestore-service";
 
 export interface CoachProfile {
   id: string;
@@ -108,9 +113,10 @@ export async function getCoaches(): Promise<CoachProfile[]> {
     // Fallback to local
   }
 
+  const fbCoaches = await getFirebaseCoaches();
   const stored = await getStoredCoaches();
   const map = new Map<string, CoachProfile>();
-  [...INITIAL_COACHES, ...stored].forEach((c) => map.set(c.id, c));
+  [...INITIAL_COACHES, ...fbCoaches, ...stored].forEach((c) => map.set(c.id, c));
   return Array.from(map.values());
 }
 
@@ -177,6 +183,11 @@ export async function registerCoachAction(
   const stored = await getStoredCoaches();
   await saveStoredCoaches([newCoach, ...stored]);
 
+  // Persist to Cloud Firestore for cross-device sync
+  if (isFirebaseConfigured) {
+    await saveFirebaseCoach(newCoach);
+  }
+
   // Dispatch live high-priority notification to Admin
   await addNotification({
     title: "طلب انضمام كابتن جديد للجهاز الفني! ⚽",
@@ -221,6 +232,11 @@ export async function approveCoachAction(
     await saveStoredCoaches([updated, ...stored]);
   }
 
+  // Update in Cloud Firestore
+  if (isFirebaseConfigured) {
+    await updateFirebaseCoachStatus(coachId, "approved");
+  }
+
   // Live notification to the coach
   await addNotification({
     title: "تم اعتماد حسابك التدريبي بنجاح! ⚽🎉",
@@ -257,6 +273,10 @@ export async function rejectCoachAction(
       const updated = { ...coach, status: "rejected" as const };
       await saveStoredCoaches([updated, ...stored]);
     }
+  }
+
+  if (isFirebaseConfigured) {
+    await updateFirebaseCoachStatus(coachId, "rejected");
   }
 
   revalidatePath("/admin/coaches");
