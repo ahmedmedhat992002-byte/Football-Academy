@@ -23,6 +23,7 @@ import { addNotification } from "@/lib/actions/notifications";
 import { getCoaches } from "@/lib/actions/coaches";
 import { createFirebaseUser, saveTrialBookingToFirestore } from "@/lib/firebase/auth-service";
 import { isFirebaseConfigured } from "@/lib/firebase/config";
+import { PRIMARY_ADMIN_EMAIL, isAdminEmail } from "@/lib/auth/admin-config";
 import type { UserRole } from "@/types/database.types";
 
 export interface AuthActionResult {
@@ -82,7 +83,44 @@ export async function loginAction(data: LoginInput): Promise<AuthActionResult> {
 
   const { email, password } = parsed.data;
 
-  // 1. Check if email matches registered parents
+  // 1. Check Admin account (exclusive authorized administrator: ahmedmedhat992002@gmail.com)
+  if (isAdminEmail(email)) {
+    const adminUser = {
+      id: "admin-master-001",
+      email: PRIMARY_ADMIN_EMAIL,
+      fullName: "أحمد مدحت (مدير الأكاديمية)",
+      role: "admin" as const,
+      phone: "01012345678",
+    };
+    const cookieStore = await cookies();
+    cookieStore.set("academy_demo_user", JSON.stringify(adminUser), {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    // Clean up any historical parent registration record for this email
+    try {
+      const registeredUsers = await getRegisteredUsers();
+      const existingIdx = registeredUsers.findIndex(
+        (u) => u.email.toLowerCase() === email.toLowerCase()
+      );
+      if (existingIdx !== -1) {
+        registeredUsers[existingIdx].role = "admin";
+        await saveRegisteredUsers(registeredUsers);
+      }
+    } catch {
+      // Ignore
+    }
+
+    return {
+      success: true,
+      redirectTo: "/admin",
+    };
+  }
+
+  // 2. Check if email matches registered parents
   const registeredUsers = await getRegisteredUsers();
   const matchedRegistered = registeredUsers.find(
     (u) => u.email.toLowerCase() === email.toLowerCase()
@@ -108,31 +146,6 @@ export async function loginAction(data: LoginInput): Promise<AuthActionResult> {
         error: "كلمة المرور غير صحيحة",
       };
     }
-  }
-
-  // 2. Check Admin account (unique real administrator)
-  if (
-    email.toLowerCase() === "admin@academy.com" &&
-    (password === "admin123" || password === "admin@2026")
-  ) {
-    const adminUser = {
-      id: "admin-master-001",
-      email: "admin@academy.com",
-      fullName: "كابتن أحمد (مدير الأكاديمية)",
-      role: "admin" as const,
-      phone: "01012345678",
-    };
-    const cookieStore = await cookies();
-    cookieStore.set("academy_demo_user", JSON.stringify(adminUser), {
-      path: "/",
-      httpOnly: true,
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
-    });
-    return {
-      success: true,
-      redirectTo: "/admin",
-    };
   }
 
   // 3. Check Coach accounts (including approved & pending coaches)
@@ -214,17 +227,27 @@ export async function loginAction(data: LoginInput): Promise<AuthActionResult> {
       };
     }
 
-    let role: UserRole = (authData.user.user_metadata?.role as UserRole) || "parent";
-    let fullName = authData.user.user_metadata?.full_name || authData.user.email;
+    const userEmail = authData.user.email || email;
+    const isUserAdmin = isAdminEmail(userEmail);
+
+    let role: UserRole = isUserAdmin
+      ? "admin"
+      : ((authData.user.user_metadata?.role as UserRole) || "parent");
+    let fullName = isUserAdmin
+      ? "أحمد مدحت (مدير الأكاديمية)"
+      : (authData.user.user_metadata?.full_name || authData.user.email);
     const coachStatus = authData.user.user_metadata?.status;
 
     try {
-      const { data: profile } = await (supabase.from("profiles") as any)
+      const { data: profile } = await supabase
+        .from("profiles")
         .select("role, full_name")
         .eq("id", authData.user.id)
         .single();
-      if (profile?.role) role = profile.role as UserRole;
-      if (profile?.full_name) fullName = profile.full_name;
+      if (profile?.role) {
+        role = isUserAdmin ? "admin" : (profile.role === "admin" ? "parent" : (profile.role as UserRole));
+      }
+      if (profile?.full_name && !isUserAdmin) fullName = profile.full_name;
     } catch {
       // Profile table optional
     }

@@ -3,11 +3,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { t } from "@/lib/i18n/translations";
 import {
   Home,
-  Shield,
   Search,
   Bell,
   User,
@@ -26,33 +24,24 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { logoutAction } from "@/lib/auth/actions";
-import { getNotifications, markAllNotificationsAsRead } from "@/lib/actions/notifications";
+import {
+  getNotifications,
+  markAllNotificationsAsRead,
+  type SystemNotification,
+} from "@/lib/actions/notifications";
 
 interface HeaderProps {
   userName?: string;
   userRole?: "admin" | "coach" | "parent";
 }
 
-interface NotificationItem {
-  id: string;
-  title: string;
-  description: string;
-  time: string;
-  unread: boolean;
-  type: "attendance" | "payment" | "evaluation" | "session";
-  href: string;
-}
-
-const INITIAL_NOTIFICATIONS: NotificationItem[] = [];
-
 export function Header({
   userName = "المستخدم",
   userRole = "admin",
 }: HeaderProps) {
-  const router = useRouter();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [notifications, setNotifications] = useState<SystemNotification[]>([]);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -85,7 +74,7 @@ export function Header({
       try {
         const live = await getNotifications(userRole);
         if (Array.isArray(live)) {
-          setNotifications(live as any);
+          setNotifications(live);
         }
       } catch {
         // Fallback to initial
@@ -207,7 +196,7 @@ export function Header({
           {isSearchFocused && searchQuery.trim() && (
             <div className="absolute top-12 start-0 end-0 rounded-2xl bg-[#0f1721] border border-[#223344] shadow-2xl p-2.5 z-50 animate-in fade-in-50 slide-in-from-top-2 text-start">
               <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 border-b border-[#20303e] flex items-center justify-between">
-                <span>نتائج البحث عن "{searchQuery}"</span>
+                <span>نتائج البحث عن &quot;{searchQuery}&quot;</span>
                 <span className="text-amber-400">{filteredItems.length} نتيجة</span>
               </div>
 
@@ -244,7 +233,7 @@ export function Header({
                   })
                 ) : (
                   <div className="py-6 text-center text-xs text-slate-400">
-                    لم يتم العثور على نتائج مطابقة لـ "{searchQuery}"
+                    لم يتم العثور على نتائج مطابقة لـ &quot;{searchQuery}&quot;
                   </div>
                 )}
               </div>

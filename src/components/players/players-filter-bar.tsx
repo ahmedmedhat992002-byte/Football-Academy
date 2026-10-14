@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { Search, Filter, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { type Group } from "@/lib/data/academy-store";
+import { t } from "@/lib/i18n/translations";
 
 interface PlayersFilterBarProps {
   searchTerm: string;
@@ -39,7 +40,7 @@ export function PlayersFilterBar({
           type="text"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="ابحث باسم اللاعب، الهاتف، أو الملاحظات..."
+          placeholder={t.players.searchPlaceholder}
           className="w-full h-10 rounded-xl bg-slate-50 border border-slate-200 ps-4 pe-10 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all text-start"
         />
         <div className="absolute end-3 top-2.5 text-slate-400 pointer-events-none">
@@ -55,7 +56,7 @@ export function PlayersFilterBar({
           onChange={(e) => onGroupChange(e.target.value)}
           className="h-10 rounded-xl bg-slate-50 border border-slate-200 px-3 text-xs font-semibold text-slate-700 focus:outline-none focus:bg-white focus:border-amber-500"
         >
-          <option value="all">كل المجموعات</option>
+          <option value="all">{t.players.allGroups}</option>
           {groups.map((group) => (
             <option key={group.id} value={group.id}>
               {group.name} ({group.age_category})
@@ -69,10 +70,10 @@ export function PlayersFilterBar({
           onChange={(e) => onStatusChange(e.target.value)}
           className="h-10 rounded-xl bg-slate-50 border border-slate-200 px-3 text-xs font-semibold text-slate-700 focus:outline-none focus:bg-white focus:border-amber-500"
         >
-          <option value="all">كل الحالات</option>
-          <option value="active">النشطون فقط</option>
-          <option value="paused">الموقوفون مؤقتاً</option>
-          <option value="left">المنسحبون</option>
+          <option value="all">{t.players.allStatuses}</option>
+          <option value="active">{t.players.activeOnly}</option>
+          <option value="paused">{t.players.pausedOnly}</option>
+          <option value="left">{t.players.leftOnly}</option>
         </select>
 
         {/* Clear Filters Button */}
@@ -83,7 +84,7 @@ export function PlayersFilterBar({
             className="flex items-center gap-1 h-10 rounded-xl px-3 text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="h-3.5 w-3.5" />
-            <span>إعادة ضبط</span>
+            <span>{t.players.resetFilters}</span>
           </button>
         )}
       </div>

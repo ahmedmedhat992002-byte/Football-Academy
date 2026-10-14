@@ -5,15 +5,10 @@ import { getEvaluations } from "@/lib/actions/evaluations";
 import { getPlayers } from "@/lib/actions/players";
 import { getSubscriptions } from "@/lib/actions/subscriptions";
 import { formatDate } from "@/lib/i18n/formatters";
-import { Card } from "@/components/ui/card";
 import { PrintReportButton } from "@/components/parent/print-report-button";
 import {
   Award,
   Star,
-  Printer,
-  Calendar,
-  User,
-  ShieldCheck,
   TrendingUp,
   Clock,
   Lock,
@@ -218,7 +213,7 @@ export default async function ParentReportPage() {
                 توجيهات وملاحظات الكابتن الفنية
               </h3>
               <p className="text-xs text-slate-300 leading-relaxed italic">
-                "{latestEval.notes}"
+                &quot;{latestEval.notes}&quot;
               </p>
             </div>
           )}

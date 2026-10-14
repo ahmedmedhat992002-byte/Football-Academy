@@ -5,7 +5,6 @@ import { cookies } from "next/headers";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getPlayers, savePlayer } from "@/lib/actions/players";
 import {
-  getSubscriptionPlans,
   saveSubscription,
   savePayment,
 } from "@/lib/actions/subscriptions";

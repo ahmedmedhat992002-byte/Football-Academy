@@ -4,7 +4,6 @@ import { getPayments, getSubscriptions } from "@/lib/actions/subscriptions";
 import { getPlayers } from "@/lib/actions/players";
 import { formatCurrency, formatDate } from "@/lib/i18n/formatters";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Receipt, Calendar, CreditCard, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 

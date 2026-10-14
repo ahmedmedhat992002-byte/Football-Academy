@@ -24,10 +24,10 @@ export default async function ParentDashboardPage() {
       (user?.fullName && p.notes?.includes(user.fullName))
   );
 
-  const activeChild = children[0] || (user?.fullName && (user as any).childName ? {
-    id: `player-${Date.now()}`,
-    full_name: (user as any).childName,
-    group_name: (user as any).ageCategory ? `فئة ${(user as any).ageCategory}` : "فريق الأبطال (U10)",
+  const activeChild = children[0] || (user?.fullName && user.childName ? {
+    id: `player-${user.id || "temp"}`,
+    full_name: user.childName,
+    group_name: user.ageCategory ? `فئة ${user.ageCategory}` : "فريق الأبطال (U10)",
     status: "active" as const,
     birth_date: "2015-05-10",
     emergency_phone: user.phone || "",

@@ -1,12 +1,16 @@
-import { cookies } from "next/headers";
-import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database.types";
 
+/**
+ * Domain model for Academy training groups, enriched with computed coach name and player count.
+ */
 export type Group = Database["public"]["Tables"]["groups"]["Row"] & {
   coach_name?: string;
   players_count?: number;
 };
 
+/**
+ * Domain model for Academy registered players, enriched with joined group and parent names.
+ */
 export type Player = Database["public"]["Tables"]["players"]["Row"] & {
   group_name?: string;
   parent_name?: string;
@@ -62,6 +66,9 @@ export const INITIAL_GROUPS: Group[] = [
 // Clean real state: starts empty with 0 mock players
 export const INITIAL_PLAYERS: Player[] = [];
 
+/**
+ * Domain model for training sessions, enriched with group details and attendance tallies.
+ */
 export type Session = Database["public"]["Tables"]["sessions"]["Row"] & {
   group_name?: string;
   age_category?: string;
@@ -75,6 +82,9 @@ export type Session = Database["public"]["Tables"]["sessions"]["Row"] & {
   attendance_taken?: boolean;
 };
 
+/**
+ * Domain model for session attendance records.
+ */
 export type AttendanceRecord = Database["public"]["Tables"]["attendance"]["Row"] & {
   player_name?: string;
 };
@@ -85,10 +95,16 @@ export const INITIAL_SESSIONS: Session[] = [];
 // Clean real state: starts empty with 0 mock attendance records
 export const INITIAL_ATTENDANCE: AttendanceRecord[] = [];
 
+/**
+ * Domain model for subscription packages and pricing tiers.
+ */
 export type SubscriptionPlan = Database["public"]["Tables"]["subscription_plans"]["Row"] & {
   description?: string;
 };
 
+/**
+ * Domain model for active/pending player subscriptions, enriched with plan details.
+ */
 export type PlayerSubscription = Database["public"]["Tables"]["subscriptions"]["Row"] & {
   player_name?: string;
   group_name?: string;
@@ -97,6 +113,9 @@ export type PlayerSubscription = Database["public"]["Tables"]["subscriptions"]["
   period?: string;
 };
 
+/**
+ * Domain model for fee payments and receipts.
+ */
 export type PaymentRecord = Database["public"]["Tables"]["payments"]["Row"] & {
   player_id?: string;
   player_name?: string;
@@ -139,6 +158,9 @@ export const INITIAL_SUBSCRIPTIONS: PlayerSubscription[] = [];
 // Clean real state: starts empty with 0 mock payments
 export const INITIAL_PAYMENTS: PaymentRecord[] = [];
 
+/**
+ * Domain model for monthly technical, physical, and tactical evaluations.
+ */
 export type Evaluation = Database["public"]["Tables"]["evaluations"]["Row"] & {
   player_name?: string;
   group_name?: string;

@@ -59,7 +59,21 @@ export async function getNotifications(userRole: "admin" | "coach" | "parent" = 
       const fbNotifs = await getFirebaseNotifications(userRole);
       if (fbNotifs.length > 0) {
         const notifMap = new Map<string, SystemNotification>();
-        [...fbNotifs, ...allNotifications].forEach((n) => notifMap.set(n.id || n.title, n));
+        allNotifications.forEach((n) => notifMap.set(n.id || n.title, n));
+        fbNotifs.forEach((n) => {
+          const mapped: SystemNotification = {
+            id: n.id || `fb-${Date.now()}`,
+            title: n.title || "إشعار جديد",
+            description: n.message || "",
+            time: "مؤخراً",
+            unread: n.read === undefined ? true : !n.read,
+            type: (n.type as SystemNotification["type"]) || "session",
+            href: (n.href as string) || "/admin",
+            targetRole: (n.targetRole as SystemNotification["targetRole"]) || "all",
+            createdAt: n.created_at || new Date().toISOString(),
+          };
+          notifMap.set(mapped.id, mapped);
+        });
         allNotifications = Array.from(notifMap.values());
       }
     } catch (fbErr) {

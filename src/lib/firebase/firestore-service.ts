@@ -3,31 +3,76 @@ import {
   collection,
   doc,
   getDocs,
-  getDoc,
   setDoc,
   updateDoc,
-  query,
-  where,
-  orderBy,
-  limit,
 } from "firebase/firestore";
+
+// =========================================================================
+// TYPES
+// =========================================================================
+
+export interface FirebaseCoachRecord {
+  id: string;
+  user_id?: string;
+  full_name?: string;
+  email?: string;
+  phone?: string | null;
+  password?: string;
+  status?: "approved" | "pending_approval" | "rejected";
+  specialization?: string | null;
+  experience_years?: number | string | null;
+  bio?: string | null;
+  photo_url?: string | null;
+  assigned_groups?: string[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface FirebaseNotificationRecord {
+  id?: string;
+  title?: string;
+  message?: string;
+  description?: string;
+  time?: string;
+  unread?: boolean;
+  read?: boolean;
+  type?: string;
+  href?: string;
+  targetRole?: string;
+  created_at?: string;
+  createdAt?: string;
+}
+
+export interface FirebasePlayerRecord {
+  id: string;
+  full_name?: string;
+  birth_date?: string;
+  group_id?: string | null;
+  parent_id?: string | null;
+  status?: string;
+  emergency_phone?: string;
+  notes?: string | null;
+  photo_url?: string | null;
+  created_at?: string;
+  [key: string]: unknown;
+}
 
 // =========================================================================
 // COACHES FIRESTORE SYNC
 // =========================================================================
 
-export async function getFirebaseCoaches(): Promise<any[]> {
+export async function getFirebaseCoaches(): Promise<FirebaseCoachRecord[]> {
   if (!isFirebaseConfigured || !db) return [];
   try {
     const snap = await getDocs(collection(db, "coaches"));
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as FirebaseCoachRecord));
   } catch (error) {
     console.warn("Firestore getCoaches error:", error);
     return [];
   }
 }
 
-export async function saveFirebaseCoach(coach: any): Promise<boolean> {
+export async function saveFirebaseCoach(coach: FirebaseCoachRecord): Promise<boolean> {
   if (!isFirebaseConfigured || !db) return false;
   try {
     await setDoc(doc(db, "coaches", coach.id), coach, { merge: true });
@@ -59,13 +104,19 @@ export async function updateFirebaseCoachStatus(
 // NOTIFICATIONS FIRESTORE SYNC (Shared across all admins/devices)
 // =========================================================================
 
-export async function getFirebaseNotifications(role?: string): Promise<any[]> {
+export async function getFirebaseNotifications(
+  role?: string
+): Promise<FirebaseNotificationRecord[]> {
   if (!isFirebaseConfigured || !db) return [];
   try {
     const snap = await getDocs(collection(db, "notifications"));
-    const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const list = snap.docs.map(
+      (d) => ({ id: d.id, ...d.data() } as FirebaseNotificationRecord)
+    );
     if (role) {
-      return list.filter((n: any) => !n.targetRole || n.targetRole === role || n.targetRole === "all");
+      return list.filter(
+        (n) => !n.targetRole || n.targetRole === role || n.targetRole === "all"
+      );
     }
     return list;
   } catch (error) {
@@ -74,7 +125,9 @@ export async function getFirebaseNotifications(role?: string): Promise<any[]> {
   }
 }
 
-export async function addFirebaseNotification(notif: any): Promise<boolean> {
+export async function addFirebaseNotification(
+  notif: FirebaseNotificationRecord
+): Promise<boolean> {
   if (!isFirebaseConfigured || !db) return false;
   try {
     const notifId = notif.id || `notif-${Date.now()}`;
@@ -94,18 +147,18 @@ export async function addFirebaseNotification(notif: any): Promise<boolean> {
 // PLAYERS FIRESTORE SYNC
 // =========================================================================
 
-export async function getFirebasePlayers(): Promise<any[]> {
+export async function getFirebasePlayers(): Promise<FirebasePlayerRecord[]> {
   if (!isFirebaseConfigured || !db) return [];
   try {
     const snap = await getDocs(collection(db, "players"));
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as FirebasePlayerRecord));
   } catch (error) {
     console.warn("Firestore getPlayers error:", error);
     return [];
   }
 }
 
-export async function saveFirebasePlayer(player: any): Promise<boolean> {
+export async function saveFirebasePlayer(player: FirebasePlayerRecord): Promise<boolean> {
   if (!isFirebaseConfigured || !db) return false;
   try {
     await setDoc(doc(db, "players", player.id), player, { merge: true });

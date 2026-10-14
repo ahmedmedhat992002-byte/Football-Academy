@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
+import { isAdminEmail } from "@/lib/auth/admin-config";
 import type { UserRole } from "@/types/database.types";
 
 export async function middleware(request: NextRequest) {
@@ -27,13 +28,25 @@ export async function middleware(request: NextRequest) {
       const raw = decodeURIComponent(demoCookie.value);
       const parsed = JSON.parse(raw);
       if (parsed?.role) {
-        activeRole = parsed.role as UserRole;
+        if (isAdminEmail(parsed.email)) {
+          activeRole = "admin";
+        } else if (parsed.role === "admin") {
+          activeRole = "parent";
+        } else {
+          activeRole = parsed.role as UserRole;
+        }
       }
     } catch {
       try {
         const parsed = JSON.parse(demoCookie.value);
         if (parsed?.role) {
-          activeRole = parsed.role as UserRole;
+          if (isAdminEmail(parsed.email)) {
+            activeRole = "admin";
+          } else if (parsed.role === "admin") {
+            activeRole = "parent";
+          } else {
+            activeRole = parsed.role as UserRole;
+          }
         }
       } catch {
         // Ignore parse failure
@@ -42,14 +55,20 @@ export async function middleware(request: NextRequest) {
   }
 
   if (!activeRole && user) {
-    try {
-      const { data: profile } = await (supabase.from("profiles") as any)
-        .select("role")
-        .eq("id", user.id)
-        .single();
-      activeRole = (profile?.role as UserRole) || "parent";
-    } catch {
-      activeRole = "parent";
+    if (isAdminEmail(user.email)) {
+      activeRole = "admin";
+    } else {
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single();
+        const role = profile?.role as UserRole;
+        activeRole = role === "admin" ? "parent" : (role || "parent");
+      } catch {
+        activeRole = "parent";
+      }
     }
   }
 

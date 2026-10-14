@@ -8,9 +8,9 @@ import {
   rejectCoachAction,
   saveCoachAction,
 } from "@/lib/actions/coaches";
-import { formatDate } from "@/lib/i18n/formatters";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { t } from "@/lib/i18n/translations";
 import {
   Users2,
   ShieldCheck,
@@ -20,9 +20,7 @@ import {
   Plus,
   Mail,
   Phone,
-  Briefcase,
   Award,
-  Sparkles,
   AlertCircle,
   UserCheck,
   X,
@@ -197,19 +195,19 @@ export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) 
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-amber-300 font-bold">بانتظار موافقتك واعتمادك</span>
+            <span className="text-xs text-amber-300 font-bold">{t.coaches.pendingApproval}</span>
             <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
               <Clock className="w-5 h-5 animate-pulse" />
             </div>
           </div>
           <div className="mt-2">
             <span className="text-3xl font-black text-white">{pendingCoaches.length}</span>
-            <span className="text-xs text-slate-400 mr-2">طلب انضمام مدرب</span>
+            <span className="text-xs text-slate-400 ms-2">{t.coaches.pendingRequestsBadge}</span>
           </div>
           <p className="text-[11px] text-amber-300/80 mt-1">
             {pendingCoaches.length > 0
-              ? "يتطلب قرارك ومراجعتك لفتح النظام للمدرب"
-              : "لا توجد طلبات معلقة حالياً"}
+              ? t.coaches.pendingDescription
+              : t.coaches.noPendingRequests}
           </p>
         </div>
 
@@ -219,16 +217,16 @@ export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) 
           className="cursor-pointer rounded-2xl p-5 bg-[#0e1720] border border-[#1e293b] text-start hover:border-amber-500/40 transition-all"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-400 font-medium">المدربون المعتمدون والنشطون</span>
+            <span className="text-xs text-slate-400 font-medium">{t.coaches.approvedCoaches}</span>
             <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
               <UserCheck className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-2">
             <span className="text-3xl font-black text-white">{approvedCoaches.length}</span>
-            <span className="text-xs text-slate-400 mr-2">مدرب مسجل</span>
+            <span className="text-xs text-slate-400 ms-2">{t.coaches.approvedBadge}</span>
           </div>
-          <p className="text-[11px] text-amber-400 mt-1">يمتلكون صلاحية كاملة لإدارة الحصص والتقييمات</p>
+          <p className="text-[11px] text-amber-400 mt-1">{t.coaches.approvedDescription}</p>
         </div>
 
         {/* Total Roster */}
@@ -237,16 +235,16 @@ export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) 
           className="cursor-pointer rounded-2xl p-5 bg-[#0e1720] border border-[#1e293b] text-start hover:border-slate-600 transition-all"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-400 font-medium">إجمالي سجل الجهاز الفني</span>
+            <span className="text-xs text-slate-400 font-medium">{t.coaches.totalRoster}</span>
             <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
               <Users2 className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-2">
             <span className="text-3xl font-black text-white">{coaches.length}</span>
-            <span className="text-xs text-slate-400 mr-2">كابتن مسجل</span>
+            <span className="text-xs text-slate-400 ms-2">{t.coaches.rosterBadge}</span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">شامل المعتمدين وقيد المراجعة</p>
+          <p className="text-[11px] text-slate-400 mt-1">{t.coaches.rosterDescription}</p>
         </div>
       </div>
 
@@ -260,10 +258,10 @@ export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) 
               </div>
               <div>
                 <h3 className="font-black text-base text-white">
-                  طلبات انضمام المدربين بانتظار اعتمادك ({pendingCoaches.length})
+                  {t.coaches.pendingListHeader} ({pendingCoaches.length})
                 </h3>
                 <p className="text-xs text-amber-200/80">
-                  الحسابات مغلقة حالياً ولن يتمكن المدرب من الدخول إلا بعد الضغط على "تأكيد واعتماد المدرب".
+                  {t.coaches.pendingSecurityNotice}
                 </p>
               </div>
             </div>

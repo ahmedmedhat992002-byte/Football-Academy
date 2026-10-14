@@ -12,7 +12,6 @@ import {
   Edit,
   Trash2,
   FileText,
-  ShieldAlert,
 } from "lucide-react";
 
 interface PlayerCardProps {

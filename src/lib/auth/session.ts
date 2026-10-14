@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/types/database.types";
+import { PRIMARY_ADMIN_EMAIL, isAdminEmail } from "@/lib/auth/admin-config";
 
 export interface CurrentUser {
   id: string;
@@ -10,13 +11,15 @@ export interface CurrentUser {
   phone?: string | null;
   status?: "active" | "pending_approval" | "rejected" | "approved";
   specialization?: string | null;
+  childName?: string | null;
+  ageCategory?: string | null;
 }
 
 export const DEMO_USERS: Record<UserRole, CurrentUser> = {
   admin: {
     id: "00000000-0000-0000-0000-000000000001",
-    email: "admin@academy.com",
-    fullName: "كابتن أحمد (مالك الأكاديمية)",
+    email: PRIMARY_ADMIN_EMAIL,
+    fullName: "أحمد مدحت (مدير الأكاديمية)",
     role: "admin",
     phone: "01012345678",
   },
@@ -50,12 +53,25 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
       const raw = decodeURIComponent(demoCookie.value);
       const parsed = JSON.parse(raw);
       if (parsed && parsed.role && parsed.id) {
+        // Enforce: only authorized email can be admin
+        if (isAdminEmail(parsed.email)) {
+          parsed.role = "admin";
+          parsed.fullName = parsed.fullName || "أحمد مدحت (مدير الأكاديمية)";
+        } else if (parsed.role === "admin") {
+          parsed.role = "parent";
+        }
         return parsed as CurrentUser;
       }
     } catch {
       try {
         const parsed = JSON.parse(demoCookie.value);
         if (parsed && parsed.role && parsed.id) {
+          if (isAdminEmail(parsed.email)) {
+            parsed.role = "admin";
+            parsed.fullName = parsed.fullName || "أحمد مدحت (مدير الأكاديمية)";
+          } else if (parsed.role === "admin") {
+            parsed.role = "parent";
+          }
           return parsed as CurrentUser;
         }
       } catch {
@@ -73,8 +89,12 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 
     if (!user) return null;
 
+    const userEmail = user.email || "";
+    const isUserAdmin = isAdminEmail(userEmail);
+
     // Fetch user profile from public.profiles
-    const { data } = await (supabase.from("profiles") as any)
+    const { data } = await supabase
+      .from("profiles")
       .select("id, full_name, phone, role")
       .eq("id", user.id)
       .single();
@@ -82,11 +102,18 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     const profile = data as { id: string; full_name: string; phone: string | null; role: UserRole } | null;
 
     if (profile) {
+      let resolvedRole = profile.role;
+      if (isUserAdmin) {
+        resolvedRole = "admin";
+      } else if (resolvedRole === "admin") {
+        resolvedRole = "parent";
+      }
+
       return {
         id: profile.id,
-        email: user.email || "",
-        fullName: profile.full_name,
-        role: profile.role,
+        email: userEmail,
+        fullName: isUserAdmin ? (profile.full_name || "أحمد مدحت (مدير الأكاديمية)") : profile.full_name,
+        role: resolvedRole,
         phone: profile.phone,
       };
     }
@@ -94,9 +121,11 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     // Default fallback if profile record is pending
     return {
       id: user.id,
-      email: user.email || "",
-      fullName: user.user_metadata?.full_name || "مستخدم الأكاديمية",
-      role: (user.user_metadata?.role as UserRole) || "parent",
+      email: userEmail,
+      fullName: isUserAdmin
+        ? "أحمد مدحت (مدير الأكاديمية)"
+        : (user.user_metadata?.full_name || "مستخدم الأكاديمية"),
+      role: isUserAdmin ? "admin" : ((user.user_metadata?.role as UserRole) || "parent"),
     };
   } catch {
     return null;

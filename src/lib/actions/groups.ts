@@ -93,7 +93,8 @@ export async function saveGroup(
   try {
     const supabase = await createClient();
     if (groupId) {
-      const { data, error } = await (supabase.from("groups") as any)
+      const { data, error } = await supabase
+        .from("groups")
         .update({
           name,
           age_category,
@@ -111,7 +112,8 @@ export async function saveGroup(
         return { success: true, group: data };
       }
     } else {
-      const { data, error } = await (supabase.from("groups") as any)
+      const { data, error } = await supabase
+        .from("groups")
         .insert({
           name,
           age_category,
@@ -183,7 +185,7 @@ export async function saveGroup(
 export async function deleteGroup(groupId: string): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
-    const { error } = await (supabase.from("groups") as any).delete().eq("id", groupId);
+    const { error } = await supabase.from("groups").delete().eq("id", groupId);
     if (!error) {
       revalidatePath("/admin/groups");
       revalidatePath("/coach/groups");

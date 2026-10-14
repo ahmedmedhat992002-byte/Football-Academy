@@ -146,7 +146,8 @@ export async function saveSession(
   try {
     const supabase = await createClient();
     if (sessionId) {
-      const { data, error } = await (supabase.from("sessions") as any)
+      const { data, error } = await supabase
+        .from("sessions")
         .update({
           group_id,
           session_date,
@@ -166,7 +167,8 @@ export async function saveSession(
         return { success: true, session: data };
       }
     } else {
-      const { data, error } = await (supabase.from("sessions") as any)
+      const { data, error } = await supabase
+        .from("sessions")
         .insert({
           group_id,
           session_date,
@@ -359,7 +361,8 @@ export async function deleteSession(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
-    const { error } = await (supabase.from("sessions") as any)
+    const { error } = await supabase
+      .from("sessions")
       .delete()
       .eq("id", sessionId);
     if (!error) {

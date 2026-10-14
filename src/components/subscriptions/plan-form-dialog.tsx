@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   subscriptionPlanSchema,
   type SubscriptionPlanInput,
+  type PlanPeriod,
 } from "@/lib/validations/subscriptions";
 import { saveSubscriptionPlan } from "@/lib/actions/subscriptions";
 import { type SubscriptionPlan } from "@/lib/data/academy-store";
@@ -37,7 +38,7 @@ export function PlanFormDialog({
     defaultValues: {
       name: planToEdit?.name || "",
       price: planToEdit?.price || 1200,
-      period: (planToEdit?.period as any) || "monthly",
+      period: (planToEdit?.period as PlanPeriod) || "monthly",
     },
   });
 

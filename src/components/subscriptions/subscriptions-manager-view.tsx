@@ -20,10 +20,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
-  CreditCard,
   Plus,
   Search,
-  Filter,
   CheckCircle2,
   AlertTriangle,
   Clock,
@@ -32,8 +30,6 @@ import {
   Calendar,
   Layers,
   Sparkles,
-  ArrowUpRight,
-  ShieldCheck,
   XCircle,
 } from "lucide-react";
 
@@ -175,7 +171,7 @@ export function SubscriptionsManagerView({
                 يوجد ({pendingCount}) طلبات اشتراك وسداد جديدة بانتظار تأكيدك!
               </h3>
               <p className="text-xs text-amber-200/80 mt-0.5 max-w-xl leading-relaxed">
-                حسابات أولياء الأمور محجوبة حالياً ولن يتم فتح المنظومة الإلكترونية لهم إلا بعد الضغط على "تأكيد واعتماد الاشتراك".
+                حسابات أولياء الأمور محجوبة حالياً ولن يتم فتح المنظومة الإلكترونية لهم إلا بعد الضغط على &quot;تأكيد واعتماد الاشتراك&quot;.
               </p>
             </div>
           </div>

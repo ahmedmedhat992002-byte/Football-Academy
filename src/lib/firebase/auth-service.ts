@@ -1,6 +1,6 @@
 import { auth, db, isFirebaseConfigured } from "./config";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, addDoc, collection } from "firebase/firestore";
 import type { UserRole } from "@/types/database.types";
 
 export interface FirebaseUserProfile {
@@ -81,14 +81,15 @@ export async function createFirebaseUser(params: {
     }
 
     return { success: true, uid: user.uid };
-  } catch (error: any) {
+  } catch (err: unknown) {
+    const error = err as { code?: string; message?: string };
     console.error("Error creating user in Firebase:", error);
     let message = "فشل إنشاء الحساب في فايربيز";
-    if (error.code === "auth/email-already-in-use") {
+    if (error?.code === "auth/email-already-in-use") {
       message = "البريد الإلكتروني مسجل بالفعل مسبقاً";
-    } else if (error.code === "auth/weak-password") {
+    } else if (error?.code === "auth/weak-password") {
       message = "كلمة المرور يجب أن لا تقل عن 6 أحرف";
-    } else if (error.message) {
+    } else if (error?.message) {
       message = error.message;
     }
     return { success: false, error: message };
@@ -112,8 +113,9 @@ export async function saveTrialBookingToFirestore(data: {
       createdAt: new Date().toISOString(),
     });
     return { success: true, id: docRef.id };
-  } catch (error: any) {
-    console.error("Error saving trial booking to Firebase:", error);
-    return { success: false, error: error.message || "فشل تسجيل طلب الاختبار" };
+  } catch (err: unknown) {
+    const error = err instanceof Error ? err.message : "فشل تسجيل طلب الاختبار";
+    console.error("Error saving trial booking to Firebase:", err);
+    return { success: false, error };
   }
 }

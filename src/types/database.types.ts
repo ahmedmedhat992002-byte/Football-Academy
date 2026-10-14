@@ -41,6 +41,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       groups: {
         Row: {
@@ -70,6 +71,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       players: {
         Row: {
@@ -111,6 +113,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       sessions: {
         Row: {
@@ -146,6 +149,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       attendance: {
         Row: {
@@ -175,6 +179,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       subscription_plans: {
         Row: {
@@ -201,6 +206,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       subscriptions: {
         Row: {
@@ -233,6 +239,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       payments: {
         Row: {
@@ -265,6 +272,7 @@ export interface Database {
           note?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       evaluations: {
         Row: {
@@ -306,7 +314,25 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
+    };
+    Enums: {
+      user_role: UserRole;
+      player_status: PlayerStatus;
+      attendance_status: AttendanceStatus;
+      plan_period: PlanPeriod;
+      subscription_status: SubscriptionStatus;
+      payment_method: PaymentMethod;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
     };
   };
 }

@@ -14,7 +14,7 @@ import {
   type Session,
 } from "@/lib/data/academy-store";
 import { getPlayers } from "@/lib/actions/players";
-import { getSessionById, getSessions } from "@/lib/actions/sessions";
+import { getSessionById } from "@/lib/actions/sessions";
 
 const ATTENDANCE_STORAGE_COOKIE = "academy_custom_attendance";
 
@@ -77,7 +77,8 @@ export async function getAttendanceRosterForSession(
   let existingRecords: AttendanceRecord[] = [];
   try {
     const supabase = await createClient();
-    const { data, error } = await (supabase.from("attendance") as any)
+    const { data, error } = await supabase
+      .from("attendance")
       .select("*")
       .eq("session_id", sessionId);
     if (!error && data && data.length > 0) {
@@ -135,7 +136,7 @@ export async function saveAttendanceBatchAction(
       note: r.note || null,
     }));
 
-    const { error } = await (supabase.from("attendance") as any).upsert(
+    const { error } = await supabase.from("attendance").upsert(
       upsertRows,
       { onConflict: "session_id,player_id" }
     );

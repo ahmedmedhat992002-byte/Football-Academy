@@ -6,7 +6,8 @@ import { PlayerCard } from "./player-card";
 import { PlayerFormDialog } from "./player-form-dialog";
 import { PlayersFilterBar } from "./players-filter-bar";
 import { Button } from "@/components/ui/button";
-import { UserCheck, Plus, Sparkles, AlertCircle } from "lucide-react";
+import { UserCheck, Plus } from "lucide-react";
+import { t } from "@/lib/i18n/translations";
 
 interface PlayersManagerViewProps {
   initialPlayers: Player[];
@@ -70,16 +71,16 @@ export function PlayersManagerView({
         <div className="text-start">
           <div className="flex items-center gap-2">
             <h1 className="text-xl md:text-2xl font-black text-slate-900">
-              قائمة وسجلات اللاعبين
+              {t.players.recordsTitle}
             </h1>
             <span className="rounded-full bg-amber-500/15 text-amber-500 border border-amber-500/30 text-xs font-black px-2.5 py-0.5">
-              {filteredPlayers.length} لاعب
+              {filteredPlayers.length} {t.players.playerUnit}
             </span>
           </div>
           <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
-            <span>النشطون: <strong className="text-amber-500">{activeCount}</strong></span>
+            <span>{t.players.activeCountLabel}: <strong className="text-amber-500">{activeCount}</strong></span>
             <span>•</span>
-            <span>الموقوفون: <strong className="text-amber-700">{pausedCount}</strong></span>
+            <span>{t.players.pausedCountLabel}: <strong className="text-amber-700">{pausedCount}</strong></span>
           </div>
         </div>
 
@@ -91,7 +92,7 @@ export function PlayersManagerView({
             className="gap-2 font-bold shadow-md h-11"
           >
             <Plus className="h-4 w-4" />
-            <span>تسجيل لاعب جديد</span>
+            <span>{t.players.addPlayer}</span>
           </Button>
         )}
       </div>
@@ -112,27 +113,27 @@ export function PlayersManagerView({
         <div className="rounded-2xl bg-white border border-slate-200 p-12 text-center space-y-3 shadow-xs">
           <UserCheck className="h-12 w-12 text-amber-500 mx-auto" />
           <h3 className="text-lg font-black text-slate-800">
-            لا يوجد لاعبون مسجلون في الأكاديمية حتى الآن
+            {t.players.noPlayersTitle}
           </h3>
           <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
-            تبدأ المنظومة نظيفة تماماً من الصفر. يمكنك إضافة لاعب جديد يدوياً أو انتظار طلبات تسجيل واشتراك أولياء الأمور عبر المنصة.
+            {t.players.noPlayersDesc}
           </p>
           {canManage && (
             <Button variant="pitch" onClick={handleCreate} className="mt-3 font-bold px-6">
-              تسجيل لاعب جديد
+              {t.players.addPlayer}
             </Button>
           )}
         </div>
       ) : filteredPlayers.length === 0 ? (
         <div className="rounded-2xl bg-white border border-slate-200 p-12 text-center space-y-3">
           <UserCheck className="h-10 w-10 text-slate-300 mx-auto" />
-          <h3 className="text-base font-bold text-slate-800">لا توجد نتائج مطابقة</h3>
+          <h3 className="text-base font-bold text-slate-800">{t.players.noResultsTitle}</h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
-            لم نتمكن من العثور على لاعبين يطابقون معايير البحث والتصفية المحددة.
+            {t.players.noResultsDesc}
           </p>
           {canManage && (
             <Button variant="pitch" onClick={handleCreate} className="mt-2 font-bold">
-              تسجيل لاعب جديد
+              {t.players.addPlayer}
             </Button>
           )}
         </div>

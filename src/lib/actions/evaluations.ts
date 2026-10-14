@@ -146,7 +146,8 @@ export async function saveEvaluation(
   try {
     const supabase = await createClient();
     if (evalId) {
-      const { data, error } = await (supabase.from("evaluations") as any)
+      const { data, error } = await supabase
+        .from("evaluations")
         .update({
           player_id,
           coach_id: coach_id || null,
@@ -170,7 +171,8 @@ export async function saveEvaluation(
         return { success: true, evaluation: data };
       }
     } else {
-      const { data, error } = await (supabase.from("evaluations") as any)
+      const { data, error } = await supabase
+        .from("evaluations")
         .insert({
           player_id,
           coach_id: coach_id || null,
@@ -258,7 +260,8 @@ export async function deleteEvaluation(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
-    const { error } = await (supabase.from("evaluations") as any)
+    const { error } = await supabase
+      .from("evaluations")
       .delete()
       .eq("id", evalId);
     if (!error) {

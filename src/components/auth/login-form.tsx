@@ -77,8 +77,7 @@ export function LoginForm() {
     startTransition(async () => {
       const result = await loginAction(data);
       if (result.success && result.redirectTo) {
-        router.push(redirectParam || result.redirectTo);
-        router.refresh();
+        window.location.href = redirectParam || result.redirectTo;
       } else {
         setErrorMessage(result.error || t.common.error);
       }
@@ -90,8 +89,7 @@ export function LoginForm() {
     startTransition(async () => {
       const result = await demoLoginAction(role);
       if (result.success && result.redirectTo) {
-        router.push(redirectParam || result.redirectTo);
-        router.refresh();
+        window.location.href = redirectParam || result.redirectTo;
       } else {
         setErrorMessage(result.error || t.common.error);
       }
@@ -152,6 +150,33 @@ export function LoginForm() {
             <span>تعذر إكمال تسجيل الدخول بواسطة Google، يرجى المحاولة مرة أخرى أو استخدام البريد.</span>
           </div>
         )}
+
+        {/* Primary Admin Quick Access Banner */}
+        <button
+          type="button"
+          onClick={() => handleDemoLogin("admin")}
+          disabled={isLoading || isGoogleLoading}
+          className="w-full group relative overflow-hidden rounded-xl border border-amber-400/80 bg-gradient-to-r from-amber-500/15 via-amber-400/25 to-amber-500/15 p-3 text-start hover:border-amber-500 hover:shadow-md transition-all active:scale-[0.99] cursor-pointer"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400 text-slate-950 font-black text-base shadow-sm">
+                👑
+              </span>
+              <div>
+                <div className="text-xs font-black text-slate-900 group-hover:text-amber-900 transition-colors">
+                  دخول مباشر لمدير الأكاديمية (أحمد مدحت)
+                </div>
+                <div className="text-[10px] text-slate-600 font-medium font-mono">
+                  ahmedmedhat992002@gmail.com
+                </div>
+              </div>
+            </div>
+            <span className="shrink-0 text-[11px] font-black text-amber-900 bg-amber-100/90 group-hover:bg-amber-200 px-2.5 py-1 rounded-lg border border-amber-300 transition-colors">
+              دخول فوري ⚡
+            </span>
+          </div>
+        </button>
 
         {/* Google Quick Sign-In Button */}
         <button

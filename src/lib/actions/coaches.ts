@@ -14,6 +14,8 @@ import {
   updateFirebaseCoachStatus,
 } from "@/lib/firebase/firestore-service";
 
+export type CoachStatus = "approved" | "pending_approval" | "rejected";
+
 export interface CoachProfile {
   id: string;
   full_name: string;
@@ -21,7 +23,7 @@ export interface CoachProfile {
   phone: string;
   password?: string;
   specialization: string;
-  status: "approved" | "pending_approval" | "rejected";
+  status: CoachStatus;
   experience_years?: string;
   bio?: string;
   assigned_groups?: string[];
@@ -90,20 +92,24 @@ export async function saveStoredCoaches(coaches: CoachProfile[]): Promise<void> 
 export async function getCoaches(): Promise<CoachProfile[]> {
   try {
     const supabase = await createClient();
-    const { data, error } = await (supabase.from("profiles") as any)
+    const { data, error } = await supabase
+      .from("profiles")
       .select("*")
       .eq("role", "coach");
     if (!error && data && data.length > 0) {
       // Map supabase profiles
-      const dbCoaches: CoachProfile[] = data.map((p: any) => ({
-        id: p.id,
-        full_name: p.full_name,
-        email: p.email || `${p.id}@academy.com`,
-        phone: p.phone || "غير محدد",
-        specialization: p.specialization || "مدرب فني",
-        status: (p.status as any) || "approved",
-        created_at: p.created_at || new Date().toISOString(),
-      }));
+      const dbCoaches: CoachProfile[] = data.map((p) => {
+        const extra = p as unknown as Record<string, unknown>;
+        return {
+          id: p.id,
+          full_name: p.full_name,
+          email: String(extra.email || `${p.id}@academy.com`),
+          phone: p.phone || "غير محدد",
+          specialization: String(extra.specialization || "مدرب فني"),
+          status: (extra.status as CoachStatus) || "approved",
+          created_at: p.created_at || new Date().toISOString(),
+        };
+      });
 
       const stored = await getStoredCoaches();
       const map = new Map<string, CoachProfile>();
@@ -128,7 +134,7 @@ export async function getCoaches(): Promise<CoachProfile[]> {
             email: u.email || "",
             phone: u.user_metadata?.phone || "غير محدد",
             specialization: u.user_metadata?.specialization || "مدرب فني",
-            status: (u.user_metadata?.status as any) || "pending_approval",
+            status: (u.user_metadata?.status as CoachStatus) || "pending_approval",
             experience_years: u.user_metadata?.experience_years || "غير محدد",
             bio: u.user_metadata?.bio || "مدرب معتمد بالأكاديمية",
             created_at: u.created_at,
@@ -144,7 +150,21 @@ export async function getCoaches(): Promise<CoachProfile[]> {
     // Fallback
   }
 
-  const fbCoaches = await getFirebaseCoaches();
+  const fbCoachesRaw = await getFirebaseCoaches();
+  const fbCoaches: CoachProfile[] = fbCoachesRaw.map((c) => ({
+    id: c.id,
+    full_name: c.full_name || "كابتن",
+    email: c.email || `${c.id}@academy.com`,
+    phone: c.phone || "غير محدد",
+    specialization: c.specialization || "مدرب فني",
+    status: (c.status as CoachStatus) || "approved",
+    experience_years:
+      typeof c.experience_years === "number"
+        ? `${c.experience_years} سنوات`
+        : c.experience_years || undefined,
+    bio: c.bio || undefined,
+    created_at: c.created_at || new Date().toISOString(),
+  }));
   const stored = await getStoredCoaches();
   const map = new Map<string, CoachProfile>();
   [...INITIAL_COACHES, ...fbCoaches, ...stored].forEach((c) => map.set(c.id, c));
@@ -334,7 +354,7 @@ export async function approveCoachAction(
  */
 export async function rejectCoachAction(
   coachId: string,
-  reason?: string
+  _reason?: string
 ): Promise<{ success: boolean; error?: string }> {
   const stored = await getStoredCoaches();
   const index = stored.findIndex((c) => c.id === coachId);

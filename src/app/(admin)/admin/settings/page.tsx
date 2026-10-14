@@ -22,7 +22,7 @@ export default function AdminSettingsPage() {
   const [saved, setSaved] = useState(false);
   const [academyName, setAcademyName] = useState("FIFA FC ACADEMY");
   const [managerName, setManagerName] = useState("أحمد مدحت");
-  const [email, setEmail] = useState("admin@academy.com");
+  const [email, setEmail] = useState("ahmedmedhat992002@gmail.com");
   const [phone, setPhone] = useState("01012345678");
 
   const handleSave = () => {

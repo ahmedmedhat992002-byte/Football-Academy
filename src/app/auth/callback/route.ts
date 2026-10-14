@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getRoleDashboard } from "@/lib/auth/roles";
+import { isAdminEmail } from "@/lib/auth/admin-config";
 import type { UserRole } from "@/types/database.types";
 
 export async function GET(request: Request) {
@@ -16,21 +17,31 @@ export async function GET(request: Request) {
 
       if (!error && data?.user) {
         const user = data.user;
-        let role: UserRole = (user.user_metadata?.role as UserRole) || "parent";
-        let fullName =
-          user.user_metadata?.full_name ||
-          user.user_metadata?.name ||
-          user.email?.split("@")[0] ||
-          "مستخدم الأكاديمية";
+        const userEmail = user.email || "";
+        const isUserAdmin = isAdminEmail(userEmail);
+
+        let role: UserRole = isUserAdmin
+          ? "admin"
+          : ((user.user_metadata?.role as UserRole) || "parent");
+
+        let fullName = isUserAdmin
+          ? (user.user_metadata?.full_name || "كابتن أحمد مدحت (مدير الأكاديمية)")
+          : (user.user_metadata?.full_name ||
+             user.user_metadata?.name ||
+             user.email?.split("@")[0] ||
+             "مستخدم الأكاديمية");
 
         // Check if user already exists in profiles
         try {
-          const { data: profile } = await (supabase.from("profiles") as any)
+          const { data: profile } = await supabase
+            .from("profiles")
             .select("role, full_name")
             .eq("id", user.id)
             .single();
 
-          if (profile?.role) role = profile.role as UserRole;
+          if (profile?.role) {
+            role = isUserAdmin ? "admin" : (profile.role === "admin" ? "parent" : (profile.role as UserRole));
+          }
           if (profile?.full_name) fullName = profile.full_name;
         } catch {
           // profiles lookup optional
@@ -42,7 +53,7 @@ export async function GET(request: Request) {
           "academy_demo_user",
           JSON.stringify({
             id: user.id,
-            email: user.email || "",
+            email: userEmail,
             fullName,
             role,
           }),

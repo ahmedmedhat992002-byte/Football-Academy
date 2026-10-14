@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useTransition, useEffect } from "react";
+import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   playerSubscriptionSchema,
   type PlayerSubscriptionInput,
+  type SubscriptionStatus,
 } from "@/lib/validations/subscriptions";
 import { saveSubscription } from "@/lib/actions/subscriptions";
 import {
@@ -60,7 +61,7 @@ export function SubscriptionFormDialog({
       plan_id: initialPlanId,
       start_date: subscriptionToEdit?.start_date || todayStr,
       end_date: subscriptionToEdit?.end_date || nextMonthStr,
-      status: (subscriptionToEdit?.status as any) || "active",
+      status: (subscriptionToEdit?.status as SubscriptionStatus) || "active",
     },
   });
 
