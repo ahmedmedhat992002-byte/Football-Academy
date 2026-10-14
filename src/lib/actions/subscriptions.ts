@@ -154,6 +154,39 @@ export async function getSubscriptions(filters?: {
   const all = [...custom, ...INITIAL_SUBSCRIPTIONS];
   const unique = Array.from(new Map(all.map((s) => [s.id, s])).values());
 
+  // Automatically include newly registered players awaiting admin approval
+  try {
+    const { getRegisteredUsers } = await import("@/lib/auth/actions");
+    const registeredUsers = await getRegisteredUsers();
+    for (const reg of registeredUsers) {
+      if (!reg.childName) continue;
+      const alreadyHas = unique.some(
+        (s) =>
+          s.player_name?.trim().toLowerCase() === reg.childName?.trim().toLowerCase() ||
+          s.id === `sub-reg-${reg.id}`
+      );
+      if (!alreadyHas) {
+        unique.unshift({
+          id: `sub-reg-${reg.id}`,
+          player_id: `player-${reg.id}`,
+          player_name: reg.childName,
+          group_name: reg.ageCategory ? `فريق (${reg.ageCategory})` : "فريق الأبطال (U10)",
+          plan_id: "plan-monthly-001",
+          plan_name: "الاشتراك الشهري الأساسي",
+          plan_price: 1200,
+          period: "monthly",
+          start_date: reg.createdAt ? reg.createdAt.split("T")[0] : new Date().toISOString().split("T")[0],
+          end_date: new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
+          status: "pending_approval",
+          created_at: reg.createdAt || new Date().toISOString(),
+          updated_at: reg.createdAt || new Date().toISOString(),
+        });
+      }
+    }
+  } catch {
+    // Ignore import failure
+  }
+
   const enriched = unique.map((s) => {
     const player = playerMap.get(s.player_id);
     const plan = planMap.get(s.plan_id);
@@ -291,8 +324,15 @@ export async function approveSubscriptionAction(
   if (subIndex >= 0) {
     custom[subIndex].status = "active";
     playerName = custom[subIndex].player_name || "اللاعب";
-    await saveStoredSubscriptions(custom);
+  } else {
+    const all = await getSubscriptions();
+    const matched = all.find((s) => s.id === subscriptionId);
+    if (matched) {
+      playerName = matched.player_name || "اللاعب";
+      custom.unshift({ ...matched, status: "active", updated_at: new Date().toISOString() });
+    }
   }
+  await saveStoredSubscriptions(custom);
 
   // Send congratulatory activation notification to parent
   await addNotification({

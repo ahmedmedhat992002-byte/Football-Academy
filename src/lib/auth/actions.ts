@@ -425,7 +425,23 @@ export async function registerAction(data: RegisterInput): Promise<AuthActionRes
   ];
   await saveRegisteredUsers(updatedUsers);
 
-  // 3. Set Session Cookie for instant login
+  // 3. Create Pending Subscription awaiting admin approval
+  const todayStr = new Date().toISOString().split("T")[0];
+  const nextMonthStr = new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0];
+  try {
+    const { saveSubscription } = await import("@/lib/actions/subscriptions");
+    await saveSubscription({
+      player_id: `player-${parentId}`,
+      plan_id: "plan-monthly-001",
+      start_date: todayStr,
+      end_date: nextMonthStr,
+      status: "pending_approval",
+    });
+  } catch (err) {
+    console.warn("saveSubscription during register error:", err);
+  }
+
+  // 4. Set Session Cookie for instant login with pending approval status
   const cookieStore = await cookies();
   cookieStore.set(
     "academy_demo_user",
@@ -437,6 +453,8 @@ export async function registerAction(data: RegisterInput): Promise<AuthActionRes
       role: "parent",
       childName,
       ageCategory: ageCategory || "U10",
+      hasPendingSubscription: true,
+      pendingPlanName: "الاشتراك الشهري الأساسي",
     }),
     {
       path: "/",
@@ -446,12 +464,12 @@ export async function registerAction(data: RegisterInput): Promise<AuthActionRes
     }
   );
 
-  // 4. Send Instant Live Notification to Admin
+  // 5. Send Instant Live Notification to Admin
   await addNotification({
-    title: "تسجيل لاعب جديد في الأكاديمية ⚽",
-    description: `سجّل ولي الأمر ${fullName} ابنه ${childName} (${ageCategory || "U10"}) — هاتف: ${phone}`,
+    title: "طلب اعتماد لاعب جديد في الأكاديمية! 🔔",
+    description: `سجّل ولي الأمر ${fullName} ابنه اللاعب (${childName}) في فئة (${ageCategory || "U10"}) — هاتف: ${phone}. بانتظار اعتمادك لتفعيل التدريب.`,
     type: "registration",
-    href: "/admin/players",
+    href: "/admin/subscriptions",
     targetRole: "admin",
   });
 

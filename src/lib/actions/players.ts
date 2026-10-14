@@ -80,6 +80,46 @@ export async function getPlayers(options?: {
   const customPlayers = await getStoredCustomPlayers();
   const allPlayers = [...customPlayers, ...INITIAL_PLAYERS];
 
+  // Automatically include newly registered children from parent registrations
+  try {
+    const { getRegisteredUsers } = await import("@/lib/auth/actions");
+    const registeredUsers = await getRegisteredUsers();
+    for (const reg of registeredUsers) {
+      if (!reg.childName) continue;
+      const alreadyExists = allPlayers.some(
+        (p) =>
+          p.full_name?.trim().toLowerCase() === reg.childName?.trim().toLowerCase() ||
+          p.id === `player-${reg.id}`
+      );
+      if (!alreadyExists) {
+        allPlayers.unshift({
+          id: `player-${reg.id}`,
+          full_name: reg.childName,
+          birth_date: reg.childBirthDate || "2015-05-10",
+          group_id:
+            reg.ageCategory === "U8"
+              ? "group-u8-004"
+              : reg.ageCategory === "U10"
+              ? "group-u10-001"
+              : reg.ageCategory === "U12"
+              ? "group-u12-002"
+              : "group-u14-003",
+          group_name: reg.ageCategory ? `فريق (${reg.ageCategory})` : "فريق الأبطال (U10)",
+          parent_id: reg.id,
+          parent_name: reg.fullName,
+          status: "active",
+          photo_url: null,
+          emergency_phone: reg.phone || "",
+          notes: `مسجل جديد عبر المنظومة — ولي الأمر: ${reg.fullName}`,
+          created_at: reg.createdAt || new Date().toISOString(),
+          updated_at: reg.createdAt || new Date().toISOString(),
+        });
+      }
+    }
+  } catch {
+    // Ignore import failure
+  }
+
   // Unique players by id
   let result = Array.from(new Map(allPlayers.map((p) => [p.id, p])).values());
 
