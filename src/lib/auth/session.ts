@@ -13,6 +13,8 @@ export interface CurrentUser {
   specialization?: string | null;
   childName?: string | null;
   ageCategory?: string | null;
+  hasPendingSubscription?: boolean;
+  pendingPlanName?: string;
 }
 
 export const DEMO_USERS: Record<UserRole, CurrentUser> = {

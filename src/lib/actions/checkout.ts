@@ -192,28 +192,31 @@ export async function processCheckoutAction(input: CheckoutInput): Promise<Check
     // Non-blocking
   }
 
-  // 6. Set parent session cookie so they can immediately access their child's portal
+  // 6. Set parent session cookie with pending approval status
   try {
     const cookieStore = await cookies();
-    if (!currentUser) {
-      cookieStore.set(
-        "academy_demo_user",
-        JSON.stringify({
-          id: parentId,
-          email: email || `${phone}@academy.com`,
-          fullName: parentName,
-          phone,
-          role: "parent",
-          childName,
-        }),
-        {
-          path: "/",
-          httpOnly: true,
-          sameSite: "lax",
-          maxAge: 60 * 60 * 24 * 7,
-        }
-      );
-    }
+    const updatedUser = {
+      ...(currentUser || {}),
+      id: currentUser?.id || parentId,
+      email: currentUser?.email || email || `${phone}@academy.com`,
+      fullName: currentUser?.fullName || parentName,
+      phone: currentUser?.phone || phone,
+      role: currentUser?.role || "parent",
+      childName: childName || currentUser?.childName,
+      hasPendingSubscription: true,
+      pendingPlanName: planInfo.name,
+    };
+
+    cookieStore.set(
+      "academy_demo_user",
+      encodeURIComponent(JSON.stringify(updatedUser)),
+      {
+        path: "/",
+        httpOnly: true,
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 7,
+      }
+    );
   } catch {
     // Ignore cookie set failure
   }
