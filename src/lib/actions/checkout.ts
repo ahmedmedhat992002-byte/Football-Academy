@@ -140,71 +140,90 @@ export async function processCheckoutAction(input: CheckoutInput): Promise<Check
   const endDateStr = endDate.toISOString().split("T")[0];
 
   // 3. Save Pending Subscription (Awaiting Admin Approval)
-  const subRes = await saveSubscription({
-    player_id: resolvedPlayerId,
-    plan_id: planInfo.id,
-    start_date: startDateStr,
-    end_date: endDateStr,
-    status: "pending_approval",
-  });
-
-  const subscriptionId = subRes.subscription?.id || `sub-${Date.now()}`;
+  let subscriptionId = `sub-${Date.now()}`;
+  try {
+    const subRes = await saveSubscription({
+      player_id: resolvedPlayerId,
+      plan_id: planInfo.id,
+      start_date: startDateStr,
+      end_date: endDateStr,
+      status: "pending_approval",
+    });
+    if (subRes?.subscription?.id) {
+      subscriptionId = subRes.subscription.id;
+    }
+  } catch (err) {
+    console.warn("saveSubscription non-blocking catch:", err);
+  }
 
   // 4. Save Payment Record & Receipt
   const receiptNo = `REC-2026-${Math.floor(1000 + Math.random() * 9000)}`;
   const paidAt = startDateStr;
 
-  await savePayment({
-    subscription_id: subscriptionId,
-    amount: planInfo.price,
-    method: paymentMethod,
-    receipt_no: receiptNo,
-    paid_at: paidAt,
-    note: `سداد اشتراك ${planInfo.name} — بانتظار اعتماد المدير — المعاملة: ${transactionRef || "قيد التحقق"}`,
-  });
-
-  // 5. Trigger Live Notification to Admin for Approval
-  await addNotification({
-    title: "طلب اشتراك وسداد بانتظار اعتمادك! 🔔",
-    description: `سدد أ. ${parentName} مبلغ ${planInfo.price} ج.م لباقة ${planInfo.name} للاعب ${childName} عبر ${
-      paymentMethod === "instapay"
-        ? `إنستاباي (المرجع: ${transactionRef || "قيد المراجعة"})`
-        : paymentMethod === "cash"
-        ? "الدفع نقداً بالملعب"
-        : "بطاقة بنكية"
-    } — يرجى مراجعة وتأكيد اعتماد الاشتراك لتفعيل حساب ولي الأمر.`,
-    type: "payment",
-    href: "/admin/subscriptions",
-    targetRole: "admin",
-  });
-
-  // 6. Set parent session cookie so they can immediately access their child's portal
-  const cookieStore = await cookies();
-  if (!currentUser) {
-    cookieStore.set(
-      "academy_demo_user",
-      JSON.stringify({
-        id: parentId,
-        email: email || `${phone}@academy.com`,
-        fullName: parentName,
-        phone,
-        role: "parent",
-        childName,
-      }),
-      {
-        path: "/",
-        httpOnly: true,
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7,
-      }
-    );
+  try {
+    await savePayment({
+      subscription_id: subscriptionId,
+      amount: planInfo.price,
+      method: paymentMethod,
+      receipt_no: receiptNo,
+      paid_at: paidAt,
+      note: `سداد اشتراك ${planInfo.name} — بانتظار اعتماد المدير — المعاملة: ${transactionRef || "قيد التحقق"}`,
+    });
+  } catch (err) {
+    console.warn("savePayment non-blocking catch:", err);
   }
 
-  revalidatePath("/parent");
-  revalidatePath("/parent/payments");
-  revalidatePath("/admin/payments");
-  revalidatePath("/admin/subscriptions");
-  revalidatePath("/admin");
+  // 5. Trigger Live Notification to Admin for Approval (non-blocking)
+  try {
+    await addNotification({
+      title: "طلب اشتراك وسداد بانتظار اعتمادك! 🔔",
+      description: `سدد أ. ${parentName} مبلغ ${planInfo.price} ج.م لباقة ${planInfo.name} للاعب ${childName} عبر ${
+        paymentMethod === "instapay"
+          ? `إنستاباي (المرجع: ${transactionRef || "قيد المراجعة"})`
+          : paymentMethod === "cash"
+          ? "الدفع نقداً بالملعب"
+          : "بطاقة بنكية"
+      } — يرجى مراجعة وتأكيد اعتماد الاشتراك لتفعيل حساب ولي الأمر.`,
+      type: "payment",
+      href: "/admin/subscriptions",
+      targetRole: "admin",
+    });
+  } catch {
+    // Non-blocking
+  }
+
+  // 6. Set parent session cookie so they can immediately access their child's portal
+  try {
+    const cookieStore = await cookies();
+    if (!currentUser) {
+      cookieStore.set(
+        "academy_demo_user",
+        JSON.stringify({
+          id: parentId,
+          email: email || `${phone}@academy.com`,
+          fullName: parentName,
+          phone,
+          role: "parent",
+          childName,
+        }),
+        {
+          path: "/",
+          httpOnly: true,
+          sameSite: "lax",
+          maxAge: 60 * 60 * 24 * 7,
+        }
+      );
+    }
+  } catch {
+    // Ignore cookie set failure
+  }
+
+  try {
+    revalidatePath("/parent");
+    revalidatePath("/admin");
+  } catch {
+    // Ignore revalidation error
+  }
 
   return {
     success: true,

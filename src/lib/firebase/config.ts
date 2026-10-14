@@ -13,7 +13,10 @@ const firebaseConfig = {
 
 export const isFirebaseConfigured = Boolean(
   process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
-  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID &&
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID !== "your-academy-project" &&
+  process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== "AIzaSy" &&
+  process.env.NEXT_PUBLIC_FIREBASE_API_KEY.length > 20
 );
 
 let app: FirebaseApp | null = null;

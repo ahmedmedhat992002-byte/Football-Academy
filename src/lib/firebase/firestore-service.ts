@@ -57,6 +57,15 @@ export interface FirebasePlayerRecord {
   [key: string]: unknown;
 }
 
+function withTimeout<T>(promise: Promise<T>, timeoutMs = 2000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error("Firestore timeout")), timeoutMs)
+    ),
+  ]);
+}
+
 // =========================================================================
 // COACHES FIRESTORE SYNC
 // =========================================================================
@@ -64,7 +73,7 @@ export interface FirebasePlayerRecord {
 export async function getFirebaseCoaches(): Promise<FirebaseCoachRecord[]> {
   if (!isFirebaseConfigured || !db) return [];
   try {
-    const snap = await getDocs(collection(db, "coaches"));
+    const snap = await withTimeout(getDocs(collection(db, "coaches")));
     return snap.docs.map((d) => ({ id: d.id, ...d.data() } as FirebaseCoachRecord));
   } catch (error) {
     console.warn("Firestore getCoaches error:", error);
@@ -75,7 +84,7 @@ export async function getFirebaseCoaches(): Promise<FirebaseCoachRecord[]> {
 export async function saveFirebaseCoach(coach: FirebaseCoachRecord): Promise<boolean> {
   if (!isFirebaseConfigured || !db) return false;
   try {
-    await setDoc(doc(db, "coaches", coach.id), coach, { merge: true });
+    await withTimeout(setDoc(doc(db, "coaches", coach.id), coach, { merge: true }));
     return true;
   } catch (error) {
     console.error("Firestore saveCoach error:", error);
@@ -89,10 +98,10 @@ export async function updateFirebaseCoachStatus(
 ): Promise<boolean> {
   if (!isFirebaseConfigured || !db) return false;
   try {
-    await updateDoc(doc(db, "coaches", coachId), {
+    await withTimeout(updateDoc(doc(db, "coaches", coachId), {
       status,
       updated_at: new Date().toISOString(),
-    });
+    }));
     return true;
   } catch (error) {
     console.error("Firestore updateCoachStatus error:", error);
@@ -109,7 +118,7 @@ export async function getFirebaseNotifications(
 ): Promise<FirebaseNotificationRecord[]> {
   if (!isFirebaseConfigured || !db) return [];
   try {
-    const snap = await getDocs(collection(db, "notifications"));
+    const snap = await withTimeout(getDocs(collection(db, "notifications")));
     const list = snap.docs.map(
       (d) => ({ id: d.id, ...d.data() } as FirebaseNotificationRecord)
     );
@@ -131,11 +140,11 @@ export async function addFirebaseNotification(
   if (!isFirebaseConfigured || !db) return false;
   try {
     const notifId = notif.id || `notif-${Date.now()}`;
-    await setDoc(doc(db, "notifications", notifId), {
+    await withTimeout(setDoc(doc(db, "notifications", notifId), {
       ...notif,
       id: notifId,
       created_at: notif.created_at || new Date().toISOString(),
-    });
+    }));
     return true;
   } catch (error) {
     console.error("Firestore addNotification error:", error);
