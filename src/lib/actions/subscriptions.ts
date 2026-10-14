@@ -19,6 +19,14 @@ import { getPlayers } from "@/lib/actions/players";
 import { addNotification } from "@/lib/actions/notifications";
 import * as plansModule from "./plans";
 import * as paymentsModule from "./payments";
+import {
+  getSharedSubscriptions,
+  saveSharedSubscription,
+  getSharedRegisteredUsers,
+} from "@/lib/data/shared-store";
+
+const isUUID = (str?: string | null): boolean =>
+  !!str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
 // Re-export explicit async functions for full Next.js Server Actions compiler compatibility
 export async function getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
@@ -151,14 +159,18 @@ export async function getSubscriptions(filters?: {
   }
 
   const custom = await getStoredSubscriptions();
-  const all = [...custom, ...INITIAL_SUBSCRIPTIONS];
+  const shared = getSharedSubscriptions();
+  const all = [...shared, ...custom, ...INITIAL_SUBSCRIPTIONS];
   const unique = Array.from(new Map(all.map((s) => [s.id, s])).values());
 
   // Automatically include newly registered players awaiting admin approval
   try {
     const { getRegisteredUsers } = await import("@/lib/auth/actions");
-    const registeredUsers = await getRegisteredUsers();
-    for (const reg of registeredUsers) {
+    const cookieRegistered = await getRegisteredUsers();
+    const sharedRegistered = getSharedRegisteredUsers();
+    const allRegistered = [...sharedRegistered, ...cookieRegistered];
+
+    for (const reg of allRegistered) {
       if (!reg.childName) continue;
       const alreadyHas = unique.some(
         (s) =>
@@ -224,13 +236,16 @@ export async function saveSubscription(
   const player = players.find((p) => p.id === player_id);
   const plan = plans.find((p) => p.id === plan_id);
 
+  const validPlayerId = isUUID(player_id) ? player_id : null;
+  const validPlanId = isUUID(plan_id) ? plan_id : null;
+
   try {
     const supabase = await createClient();
     if (subscriptionId) {
       const { data, error } = await (supabase.from("subscriptions") as any)
         .update({
-          player_id,
-          plan_id,
+          player_id: validPlayerId,
+          plan_id: validPlanId,
           start_date,
           end_date,
           status,
@@ -240,19 +255,43 @@ export async function saveSubscription(
         .select()
         .single();
       if (!error && data) {
+        const enriched: PlayerSubscription = {
+          ...data,
+          player_name: player?.full_name || "لاعب",
+          group_name: player?.group_name || "الفريق",
+          plan_name: plan?.name || "الاشتراك الشهري",
+          plan_price: plan?.price || 1200,
+          period: plan?.period || "monthly",
+        };
+        saveSharedSubscription(enriched);
         revalidatePath("/admin/subscriptions");
         revalidatePath("/parent");
-        return { success: true, subscription: data };
+        return { success: true, subscription: enriched };
       }
     } else {
       const { data, error } = await (supabase.from("subscriptions") as any)
-        .insert({ player_id, plan_id, start_date, end_date, status })
+        .insert({
+          player_id: validPlayerId,
+          plan_id: validPlanId,
+          start_date,
+          end_date,
+          status,
+        })
         .select()
         .single();
       if (!error && data) {
+        const enriched: PlayerSubscription = {
+          ...data,
+          player_name: player?.full_name || "لاعب",
+          group_name: player?.group_name || "الفريق",
+          plan_name: plan?.name || "الاشتراك الشهري",
+          plan_price: plan?.price || 1200,
+          period: plan?.period || "monthly",
+        };
+        saveSharedSubscription(enriched);
         revalidatePath("/admin/subscriptions");
         revalidatePath("/parent");
-        return { success: true, subscription: data };
+        return { success: true, subscription: enriched };
       }
     }
   } catch {
@@ -300,7 +339,10 @@ export async function saveSubscription(
     custom.unshift(updatedSub);
   }
 
+  // Save to shared store across all sessions & browsers
+  saveSharedSubscription(updatedSub);
   await saveStoredSubscriptions(custom);
+
   revalidatePath("/admin/subscriptions");
   revalidatePath("/parent");
   return { success: true, subscription: updatedSub };
@@ -333,6 +375,21 @@ export async function approveSubscriptionAction(
     }
   }
   await saveStoredSubscriptions(custom);
+
+  // Update in shared store
+  const shared = getSharedSubscriptions();
+  const sharedIdx = shared.findIndex((s) => s.id === subscriptionId);
+  if (sharedIdx >= 0) {
+    shared[sharedIdx].status = "active";
+    shared[sharedIdx].updated_at = new Date().toISOString();
+    saveSharedSubscription(shared[sharedIdx]);
+  } else {
+    const all = await getSubscriptions();
+    const matched = all.find((s) => s.id === subscriptionId);
+    if (matched) {
+      saveSharedSubscription({ ...matched, status: "active", updated_at: new Date().toISOString() });
+    }
+  }
 
   // Send congratulatory activation notification to parent
   await addNotification({
@@ -374,6 +431,14 @@ export async function rejectSubscriptionAction(
     custom[subIndex].status = "overdue";
     playerName = custom[subIndex].player_name || "اللاعب";
     await saveStoredSubscriptions(custom);
+  }
+
+  const shared = getSharedSubscriptions();
+  const sharedIdx = shared.findIndex((s) => s.id === subscriptionId);
+  if (sharedIdx >= 0) {
+    shared[sharedIdx].status = "overdue";
+    shared[sharedIdx].updated_at = new Date().toISOString();
+    saveSharedSubscription(shared[sharedIdx]);
   }
 
   await addNotification({

@@ -34,6 +34,11 @@ export interface AuthActionResult {
   emailSentTo?: string;
 }
 
+import {
+  getSharedRegisteredUsers,
+  saveSharedRegisteredUser,
+} from "@/lib/data/shared-store";
+
 const REGISTERED_USERS_COOKIE = "academy_registered_users";
 
 export interface RegisteredUserRecord extends CurrentUser {
@@ -45,21 +50,32 @@ export interface RegisteredUserRecord extends CurrentUser {
 }
 
 export async function getRegisteredUsers(): Promise<RegisteredUserRecord[]> {
+  const shared = getSharedRegisteredUsers() as RegisteredUserRecord[];
   const cookieStore = await cookies();
   const raw = cookieStore.get(REGISTERED_USERS_COOKIE)?.value;
-  if (!raw) return [];
-  try {
-    return JSON.parse(decodeURIComponent(raw));
-  } catch {
+  let fromCookies: RegisteredUserRecord[] = [];
+  if (raw) {
     try {
-      return JSON.parse(raw);
+      fromCookies = JSON.parse(decodeURIComponent(raw));
     } catch {
-      return [];
+      try {
+        fromCookies = JSON.parse(raw);
+      } catch {
+        fromCookies = [];
+      }
     }
   }
+  const map = new Map<string, RegisteredUserRecord>();
+  for (const u of [...shared, ...(Array.isArray(fromCookies) ? fromCookies : [])]) {
+    if (u?.email) map.set(u.email.toLowerCase(), u);
+  }
+  return Array.from(map.values());
 }
 
 async function saveRegisteredUsers(users: RegisteredUserRecord[]): Promise<void> {
+  for (const u of users) {
+    saveSharedRegisteredUser(u);
+  }
   const cookieStore = await cookies();
   cookieStore.set(REGISTERED_USERS_COOKIE, encodeURIComponent(JSON.stringify(users)), {
     path: "/",
@@ -394,15 +410,17 @@ export async function registerAction(data: RegisterInput): Promise<AuthActionRes
       ? "group-u12-002"
       : "group-u14-003";
 
-  await savePlayer({
+  const savedPlayerRes = await savePlayer({
     full_name: childName,
     birth_date: childBirthDate,
     group_id: groupTargetId,
     parent_id: effectiveParentId,
     status: "active",
     emergency_phone: phone,
-    notes: `مسجل جديد عبر المنظمة — ولي الأمر: ${fullName}`,
+    notes: `مسجل جديد عبر المنظومة — ولي الأمر: ${fullName}`,
   });
+
+  const createdPlayerId = savedPlayerRes?.player?.id || `player-${parentId}`;
 
   // 2. Persist Registered Parent Account
   const registeredUsers = await getRegisteredUsers();
@@ -431,7 +449,7 @@ export async function registerAction(data: RegisterInput): Promise<AuthActionRes
   try {
     const { saveSubscription } = await import("@/lib/actions/subscriptions");
     await saveSubscription({
-      player_id: `player-${parentId}`,
+      player_id: createdPlayerId,
       plan_id: "plan-monthly-001",
       start_date: todayStr,
       end_date: nextMonthStr,

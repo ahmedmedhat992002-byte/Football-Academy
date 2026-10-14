@@ -5,8 +5,16 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { playerSchema, type PlayerInput } from "@/lib/validations/players";
 import { INITIAL_PLAYERS, INITIAL_GROUPS, type Player } from "@/lib/data/academy-store";
+import {
+  getSharedPlayers,
+  saveSharedPlayer,
+  getSharedRegisteredUsers,
+} from "@/lib/data/shared-store";
 
 const PLAYERS_STORAGE_COOKIE = "academy_custom_players";
+
+const isUUID = (str?: string | null): boolean =>
+  !!str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
 async function getStoredCustomPlayers(): Promise<Player[]> {
   const cookieStore = await cookies();
@@ -78,13 +86,17 @@ export async function getPlayers(options?: {
   }
 
   const customPlayers = await getStoredCustomPlayers();
-  const allPlayers = [...customPlayers, ...INITIAL_PLAYERS];
+  const sharedPlayers = getSharedPlayers();
+  const allPlayers = [...sharedPlayers, ...customPlayers, ...INITIAL_PLAYERS];
 
-  // Automatically include newly registered children from parent registrations
+  // Automatically include newly registered children from parent registrations (both shared and cookies)
   try {
     const { getRegisteredUsers } = await import("@/lib/auth/actions");
-    const registeredUsers = await getRegisteredUsers();
-    for (const reg of registeredUsers) {
+    const cookieRegistered = await getRegisteredUsers();
+    const sharedRegistered = getSharedRegisteredUsers();
+    const allRegistered = [...sharedRegistered, ...cookieRegistered];
+
+    for (const reg of allRegistered) {
       if (!reg.childName) continue;
       const alreadyExists = allPlayers.some(
         (p) =>
@@ -176,6 +188,9 @@ export async function savePlayer(
     ? `${matchedGroup.name} (${matchedGroup.age_category})`
     : "غير محدد";
 
+  const validGroupId = isUUID(group_id) ? group_id : null;
+  const validParentId = isUUID(parent_id) ? parent_id : null;
+
   try {
     const supabase = await createClient();
     if (playerId) {
@@ -183,8 +198,8 @@ export async function savePlayer(
         .update({
           full_name,
           birth_date,
-          group_id: group_id || null,
-          parent_id: parent_id || null,
+          group_id: validGroupId,
+          parent_id: validParentId,
           status,
           emergency_phone,
           notes: notes || null,
@@ -196,6 +211,7 @@ export async function savePlayer(
         .single();
 
       if (!error && data) {
+        saveSharedPlayer({ ...data, group_name, parent_name: "ولي الأمر" });
         revalidatePath("/admin/players");
         revalidatePath("/coach/groups");
         return { success: true, player: data };
@@ -205,8 +221,8 @@ export async function savePlayer(
         .insert({
           full_name,
           birth_date,
-          group_id: group_id || null,
-          parent_id: parent_id || null,
+          group_id: validGroupId,
+          parent_id: validParentId,
           status,
           emergency_phone,
           notes: notes || null,
@@ -216,6 +232,7 @@ export async function savePlayer(
         .single();
 
       if (!error && data) {
+        saveSharedPlayer({ ...data, group_name, parent_name: "ولي الأمر" });
         revalidatePath("/admin/players");
         revalidatePath("/coach/groups");
         return { success: true, player: data };
@@ -270,6 +287,8 @@ export async function savePlayer(
     currentCustom.unshift(updatedPlayer);
   }
 
+  // Save to shared store across all sessions & browsers
+  saveSharedPlayer(updatedPlayer);
   await saveCustomPlayers(currentCustom);
 
   revalidatePath("/admin/players");

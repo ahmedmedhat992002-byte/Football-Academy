@@ -11,6 +11,10 @@ import {
   type PlayerSubscription,
 } from "@/lib/data/academy-store";
 import { getPlayers } from "@/lib/actions/players";
+import {
+  getSharedPayments,
+  saveSharedPayment,
+} from "@/lib/data/shared-store";
 
 const PAYMENTS_STORAGE_COOKIE = "academy_custom_payments";
 const SUBS_STORAGE_COOKIE = "academy_custom_subscriptions";
@@ -115,7 +119,8 @@ export async function getPayments(filters?: {
   }
 
   const custom = await getStoredPayments();
-  const all = [...custom, ...INITIAL_PAYMENTS];
+  const shared = getSharedPayments();
+  const all = [...shared, ...custom, ...INITIAL_PAYMENTS];
   const unique = Array.from(new Map(all.map((p) => [p.id, p])).values());
 
   const enriched = unique.map((p) => {
@@ -197,6 +202,7 @@ export async function savePayment(
     created_at: new Date().toISOString(),
   };
 
+  saveSharedPayment(newPayment);
   customPayments.unshift(newPayment);
   await saveStoredPayments(customPayments);
 
