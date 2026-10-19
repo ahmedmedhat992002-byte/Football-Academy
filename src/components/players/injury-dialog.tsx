@@ -83,10 +83,17 @@ export function InjuryDialog({
         await updateInjuryStatus(
           activeInjury.id,
           "active",
-          doctorNotes || description
+          doctorNotes || description,
+          {
+            injury_type: injuryType,
+            description,
+            injury_date: injuryDate,
+            expected_return_date: expectedReturnDate || undefined,
+            doctor_notes: doctorNotes,
+          }
         );
       } else {
-        await recordInjury({
+        const res = await recordInjury({
           player_id: player.id,
           player_name: player.full_name,
           injury_type: injuryType,
@@ -96,12 +103,16 @@ export function InjuryDialog({
           status: "active",
           doctor_notes: doctorNotes,
         });
+        if (!res.success) {
+          alert(res.error || "تعذر تسجيل الإصابة");
+          return;
+        }
       }
 
       onOpenChange(false);
       if (onSaved) onSaved();
-    } catch {
-      //
+    } catch (err) {
+      console.error("Failed to save injury:", err);
     } finally {
       setLoading(false);
     }

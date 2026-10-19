@@ -34,6 +34,7 @@ export interface AcademySharedData {
   badges: PlayerBadge[];
   testimonials: Testimonial[];
   coaches: CoachProfile[];
+  deletedPlayerIds?: string[];
 }
 
 declare global {
@@ -68,6 +69,7 @@ function loadFromFile(): AcademySharedData {
         badges: Array.isArray(parsed.badges) ? parsed.badges : [],
         testimonials: Array.isArray(parsed.testimonials) ? parsed.testimonials : [],
         coaches: Array.isArray(parsed.coaches) ? parsed.coaches : [],
+        deletedPlayerIds: Array.isArray(parsed.deletedPlayerIds) ? parsed.deletedPlayerIds : [],
       };
     }
   } catch (err) {
@@ -83,6 +85,7 @@ function loadFromFile(): AcademySharedData {
     badges: [],
     testimonials: [],
     coaches: [],
+    deletedPlayerIds: [],
   };
 }
 
@@ -120,6 +123,10 @@ export function getSharedPlayers(): Player[] {
 
 export function saveSharedPlayer(player: Player): void {
   persistSharedStore((store) => {
+    if (!Array.isArray(store.deletedPlayerIds)) store.deletedPlayerIds = [];
+    store.deletedPlayerIds = store.deletedPlayerIds.filter(
+      (id) => id !== player.id && id !== player.id.replace("player-", "")
+    );
     const idx = store.players.findIndex((p) => p.id === player.id);
     if (idx >= 0) {
       store.players[idx] = player;
@@ -128,6 +135,26 @@ export function saveSharedPlayer(player: Player): void {
     }
   });
 }
+
+export function deleteSharedPlayer(playerId: string): void {
+  persistSharedStore((store) => {
+    store.players = store.players.filter((p) => p.id !== playerId);
+    if (!Array.isArray(store.deletedPlayerIds)) store.deletedPlayerIds = [];
+    if (!store.deletedPlayerIds.includes(playerId)) {
+      store.deletedPlayerIds.push(playerId);
+    }
+    const rawId = playerId.replace("player-", "");
+    if (!store.deletedPlayerIds.includes(rawId)) {
+      store.deletedPlayerIds.push(rawId);
+    }
+  });
+}
+
+export function getSharedDeletedPlayerIds(): string[] {
+  const store = getSharedStore();
+  return Array.isArray(store.deletedPlayerIds) ? store.deletedPlayerIds : [];
+}
+
 
 // --- Subscription Helpers ---
 export function getSharedSubscriptions(): PlayerSubscription[] {

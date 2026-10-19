@@ -8,6 +8,7 @@ import {
   deleteSharedInjury,
 } from "@/lib/data/shared-store";
 import { getPlayers } from "@/lib/actions/players";
+import { invalidateCache } from "@/lib/data/cache-manager";
 
 export async function getInjuries(options?: {
   playerId?: string;
@@ -53,6 +54,7 @@ export async function recordInjury(
     };
 
     saveSharedInjury(newInjury);
+    invalidateCache();
 
     revalidatePath("/admin/players");
     revalidatePath("/coach/pitch");
@@ -68,7 +70,8 @@ export async function recordInjury(
 export async function updateInjuryStatus(
   id: string,
   status: PlayerInjury["status"],
-  notes?: string
+  notes?: string,
+  details?: Partial<Omit<PlayerInjury, "id" | "created_at">>
 ): Promise<{ success: boolean }> {
   try {
     const list = getSharedInjuries();
@@ -77,11 +80,13 @@ export async function updateInjuryStatus(
 
     const updated: PlayerInjury = {
       ...existing,
+      ...(details || {}),
       status,
-      doctor_notes: notes !== undefined ? notes : existing.doctor_notes,
+      doctor_notes: notes !== undefined ? notes : (details?.doctor_notes ?? existing.doctor_notes),
     };
 
     saveSharedInjury(updated);
+    invalidateCache();
 
     revalidatePath("/admin/players");
     revalidatePath("/coach/pitch");
@@ -96,6 +101,7 @@ export async function updateInjuryStatus(
 export async function deleteInjury(id: string): Promise<{ success: boolean }> {
   try {
     deleteSharedInjury(id);
+    invalidateCache();
     revalidatePath("/admin/players");
     revalidatePath("/coach/pitch");
     return { success: true };

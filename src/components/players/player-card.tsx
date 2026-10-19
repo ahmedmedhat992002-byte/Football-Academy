@@ -27,12 +27,16 @@ import {
 interface PlayerCardProps {
   player: Player;
   onEdit?: (player: Player) => void;
+  onDelete?: (playerId: string) => void;
+  onPlayerUpdated?: (player: Player) => void;
   canManage?: boolean;
 }
 
 export function PlayerCard({
   player,
   onEdit,
+  onDelete,
+  onPlayerUpdated,
   canManage = true,
 }: PlayerCardProps) {
   const [isPending, startTransition] = useTransition();
@@ -43,9 +47,14 @@ export function PlayerCard({
   );
 
   const handleDelete = () => {
-    if (confirm(`هل أنت متأكد من حذف اللاعب ${player.full_name}؟`)) {
+    if (confirm(`هل أنت متأكد من حذف اللاعب ${player.full_name} نهائياً؟`)) {
+      onDelete?.(player.id);
       startTransition(async () => {
-        await deletePlayer(player.id);
+        const res = await deletePlayer(player.id);
+        if (!res.success) {
+          alert("تعذر حذف اللاعب");
+          window.location.reload();
+        }
       });
     }
   };

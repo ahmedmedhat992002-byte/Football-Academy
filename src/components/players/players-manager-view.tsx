@@ -21,6 +21,7 @@ export function PlayersManagerView({
   groups,
   canManage = true,
 }: PlayersManagerViewProps) {
+  const [players, setPlayers] = useState<Player[]>(initialPlayers);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
@@ -28,8 +29,28 @@ export function PlayersManagerView({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
 
+  React.useEffect(() => {
+    setPlayers(initialPlayers);
+  }, [initialPlayers]);
+
+  const handleDeletePlayer = (playerId: string) => {
+    setPlayers((prev) => prev.filter((p) => p.id !== playerId));
+  };
+
+  const handlePlayerSaved = (savedPlayer: Player) => {
+    setPlayers((prev) => {
+      const idx = prev.findIndex((p) => p.id === savedPlayer.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = savedPlayer;
+        return next;
+      }
+      return [savedPlayer, ...prev];
+    });
+  };
+
   // Client-side filtering for fast responsive UI
-  const filteredPlayers = initialPlayers.filter((player) => {
+  const filteredPlayers = players.filter((player) => {
     // Group filter
     if (selectedGroup !== "all" && player.group_id !== selectedGroup) {
       return false;
@@ -52,8 +73,8 @@ export function PlayersManagerView({
     return true;
   });
 
-  const activeCount = initialPlayers.filter((p) => p.status === "active").length;
-  const pausedCount = initialPlayers.filter((p) => p.status === "paused").length;
+  const activeCount = players.filter((p) => p.status === "active").length;
+  const pausedCount = players.filter((p) => p.status === "paused").length;
 
   const handleCreate = () => {
     setPlayerToEdit(null);
@@ -123,7 +144,7 @@ export function PlayersManagerView({
       />
 
       {/* Players Grid */}
-      {initialPlayers.length === 0 ? (
+      {players.length === 0 ? (
         <div className="rounded-2xl bg-white border border-slate-200 p-12 text-center space-y-3 shadow-xs">
           <UserCheck className="h-12 w-12 text-amber-500 mx-auto" />
           <h3 className="text-lg font-black text-slate-800">
@@ -158,6 +179,8 @@ export function PlayersManagerView({
               key={player.id}
               player={player}
               onEdit={handleEdit}
+              onDelete={handleDeletePlayer}
+              onPlayerUpdated={handlePlayerSaved}
               canManage={canManage}
             />
           ))}
@@ -170,6 +193,7 @@ export function PlayersManagerView({
         onClose={() => setIsDialogOpen(false)}
         playerToEdit={playerToEdit}
         groups={groups}
+        onSaved={handlePlayerSaved}
       />
     </div>
   );

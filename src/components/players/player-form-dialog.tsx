@@ -15,6 +15,7 @@ interface PlayerFormDialogProps {
   onClose: () => void;
   playerToEdit?: Player | null;
   groups: Group[];
+  onSaved?: (player: Player) => void;
 }
 
 export function PlayerFormDialog({
@@ -22,6 +23,7 @@ export function PlayerFormDialog({
   onClose,
   playerToEdit,
   groups,
+  onSaved,
 }: PlayerFormDialogProps) {
   const [isPending, startTransition] = useTransition();
   const [serverError, setServerError] = useState<string | null>(null);
@@ -46,11 +48,29 @@ export function PlayerFormDialog({
     },
   });
 
+  React.useEffect(() => {
+    if (isOpen) {
+      reset({
+        full_name: playerToEdit?.full_name || "",
+        birth_date: playerToEdit?.birth_date || "2014-01-01",
+        group_id: playerToEdit?.group_id || (groups[0]?.id || ""),
+        status: playerToEdit?.status || "active",
+        emergency_phone: playerToEdit?.emergency_phone || "",
+        notes: playerToEdit?.notes || "",
+        kit_size: (playerToEdit as any)?.kit_size || "M",
+        kit_received: (playerToEdit as any)?.kit_received || false,
+        jersey_number: (playerToEdit as any)?.jersey_number || "",
+      });
+      setServerError(null);
+    }
+  }, [isOpen, playerToEdit, reset, groups]);
+
   const onSubmit = (data: PlayerInput) => {
     setServerError(null);
     startTransition(async () => {
       const result = await savePlayer(data, playerToEdit?.id);
-      if (result.success) {
+      if (result.success && result.player) {
+        onSaved?.(result.player);
         reset();
         onClose();
       } else {
