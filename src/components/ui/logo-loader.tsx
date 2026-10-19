@@ -97,22 +97,13 @@ export function LogoLoader({
     </div>
   );
 
-  // Variant: Floating (Clean emblem floating during page transitions / lag)
-  if (variant === "floating") {
+  // Variant: Fullscreen / Overlay (without blur)
+  if (variant === "fullscreen" || variant === "floating") {
     return (
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4 pointer-events-none animate-page-enter">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none animate-page-enter">
         <div className="pointer-events-auto p-4 flex items-center justify-center">
           {PureCosmicEmblem}
         </div>
-      </div>
-    );
-  }
-
-  // Variant: Fullscreen
-  if (variant === "fullscreen") {
-    return (
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 animate-page-enter">
-        {PureCosmicEmblem}
       </div>
     );
   }

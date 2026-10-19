@@ -23,11 +23,7 @@ export function RouteProgressProvider({
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [showMiniLogo, setShowMiniLogo] = useState(false);
-  const [isSlow, setIsSlow] = useState(false);
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const slowTimerRef = useRef<NodeJS.Timeout | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Complete loading when pathname or searchParams change - ultra fast cleanup
@@ -36,8 +32,6 @@ export function RouteProgressProvider({
       setProgress(100);
       const finishTimeout = setTimeout(() => {
         setIsLoading(false);
-        setShowMiniLogo(false);
-        setIsSlow(false);
         setProgress(0);
       }, 60);
       return () => clearTimeout(finishTimeout);
@@ -45,10 +39,9 @@ export function RouteProgressProvider({
   }, [isLoading]);
 
   // Start progress bar animation
-  const startProgress = (customText?: string) => {
+  const startProgress = () => {
     setIsLoading(true);
     setProgress(30);
-    setIsSlow(false);
 
     // Increment progress rapidly
     if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
@@ -60,29 +53,13 @@ export function RouteProgressProvider({
         return prev;
       });
     }, 70);
-
-    // Only show the luxury loading card if navigation actually lags (> 420ms) or hangs
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      setShowMiniLogo(true);
-    }, 420);
-
-    // If it takes longer than 2.0s (slow network), mark as slow
-    if (slowTimerRef.current) clearTimeout(slowTimerRef.current);
-    slowTimerRef.current = setTimeout(() => {
-      setIsSlow(true);
-    }, 2000);
   };
 
   const stopProgress = () => {
     if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
-    if (timerRef.current) clearTimeout(timerRef.current);
-    if (slowTimerRef.current) clearTimeout(slowTimerRef.current);
     setProgress(100);
     setTimeout(() => {
       setIsLoading(false);
-      setShowMiniLogo(false);
-      setIsSlow(false);
       setProgress(0);
     }, 50);
   };
@@ -147,8 +124,6 @@ export function RouteProgressProvider({
       window.removeEventListener("academy_start_loading", handleCustomStart);
       window.removeEventListener("academy_stop_loading", handleCustomStop);
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
-      if (timerRef.current) clearTimeout(timerRef.current);
-      if (slowTimerRef.current) clearTimeout(slowTimerRef.current);
     };
   }, [router]);
 
@@ -175,14 +150,6 @@ export function RouteProgressProvider({
             }}
           />
         </div>
-      )}
-
-      {/* Pure Cosmic FIFA FC Emblem when navigation lags (> 420ms) or hangs */}
-      {showMiniLogo && (
-        <LogoLoader
-          variant="floating"
-          size="md"
-        />
       )}
 
       {children}
