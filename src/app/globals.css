@@ -134,6 +134,60 @@ textarea {
   will-change: transform;
 }
 
+/* Cosmic Elliptical Gold Ring Orbit for the FIFA FC card */
+@keyframes cosmicOrbit {
+  0% {
+    transform: rotate(-14deg) scaleY(0.48) rotate(0deg);
+  }
+  100% {
+    transform: rotate(-14deg) scaleY(0.48) rotate(360deg);
+  }
+}
+
+.animate-cosmic-orbit {
+  animation: cosmicOrbit 3.5s linear infinite;
+  will-change: transform;
+}
+
+/* Counter-rotating cosmic orbit */
+@keyframes cosmicOrbitReverse {
+  0% {
+    transform: rotate(-14deg) scaleY(0.48) rotate(360deg);
+  }
+  100% {
+    transform: rotate(-14deg) scaleY(0.48) rotate(0deg);
+  }
+}
+
+.animate-cosmic-orbit-reverse {
+  animation: cosmicOrbitReverse 5s linear infinite;
+  will-change: transform;
+}
+
+/* Staggered Golden Dots Pulse */
+@keyframes dotPulseSequence {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+    filter: drop-shadow(0 0 2px rgba(230, 200, 117, 0.3));
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+    filter: drop-shadow(0 0 10px rgba(245, 197, 66, 0.95));
+  }
+}
+
+.animate-dot-1 {
+  animation: dotPulseSequence 1.3s ease-in-out infinite;
+}
+.animate-dot-2 {
+  animation: dotPulseSequence 1.3s ease-in-out infinite 0.22s;
+}
+.animate-dot-3 {
+  animation: dotPulseSequence 1.3s ease-in-out infinite 0.44s;
+}
+
 /* Logo pulse / heartbeat */
 @keyframes logoPulse {
   0%, 100% {

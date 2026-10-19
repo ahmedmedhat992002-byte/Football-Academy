@@ -165,13 +165,11 @@ export function RouteProgressProvider({
         </div>
       )}
 
-      {/* Floating Mini Logo Loader when navigation takes > 180ms or on slow network */}
+      {/* Luxury FIFA FC Loading Card when navigation takes > 180ms or on slow network */}
       {showMiniLogo && (
         <LogoLoader
-          size="sm"
           variant="floating"
-          text={isSlow ? "الشبكة بطيئة، جاري الانتقال..." : "جاري الانتقال..."}
-          subtext={isSlow ? "FIFA FC • يرجى الانتظار" : "FIFA FC ACADEMY"}
+          text={"جاري تحميل الصفحة\nوتحديث البيانات..."}
           isSlowNetwork={isSlow}
         />
       )}
