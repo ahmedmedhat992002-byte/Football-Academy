@@ -248,3 +248,39 @@ export interface PlayerBadge {
 }
 
 export const INITIAL_BADGES: PlayerBadge[] = [];
+
+export const BADGE_DEFINITIONS: Record<
+  BadgeType,
+  { title: string; icon: string; description: string; color: string }
+> = {
+  star_of_week: {
+    title: "نجم الأسبوع 🌟",
+    icon: "🌟",
+    description: "تألق استثنائي وأداء بطولي في تمارين ومباريات الأسبوع",
+    color: "from-amber-400 to-yellow-500",
+  },
+  top_scorer: {
+    title: "هداف التمرين ⚽",
+    icon: "⚽",
+    description: "أعلى دقة تسجيل وتأثير حاسم أمام المرمى",
+    color: "from-blue-500 to-indigo-600",
+  },
+  wall_defense: {
+    title: "حائط الصد 🛡️",
+    icon: "🛡️",
+    description: "استبسال دفاعي وقطع هجمات المنافس بذكاء وقوة",
+    color: "from-emerald-500 to-teal-600",
+  },
+  iron_discipline: {
+    title: "الأكثر التزاماً ⏱️",
+    icon: "⏱️",
+    description: "انضباط تام في المواعيد وحضور كافة الحصص والتركيز الكامل",
+    color: "from-purple-500 to-pink-600",
+  },
+  fair_play: {
+    title: "الروح الرياضية 🤝",
+    icon: "🤝",
+    description: "احترام الزملاء والمنافس والتعاون الإيجابي مع الكابتن",
+    color: "from-cyan-500 to-blue-600",
+  },
+};

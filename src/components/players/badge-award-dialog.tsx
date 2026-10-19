@@ -1,8 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { type Player, type BadgeType } from "@/lib/data/academy-store";
-import { awardBadge, BADGE_DEFINITIONS } from "@/lib/actions/badges";
+import {
+  type Player,
+  type BadgeType,
+  BADGE_DEFINITIONS,
+} from "@/lib/data/academy-store";
+import { awardBadge } from "@/lib/actions/badges";
 import {
   Dialog,
   DialogContent,
