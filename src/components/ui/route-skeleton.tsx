@@ -15,12 +15,9 @@ export function RouteSkeleton({
 }: RouteSkeletonProps) {
   return (
     <div className="space-y-6 p-4 md:p-6 animate-page-enter">
-      {/* Luxury Golden Loading Card */}
+      {/* Pure Cosmic FIFA FC Emblem */}
       <div className="w-full flex justify-center py-4">
-        <LogoLoader
-          variant="card"
-          text={"جاري تحميل الصفحة\nوتحديث البيانات..."}
-        />
+        <LogoLoader variant="card" size="md" />
       </div>
 
       {/* Page Header */}

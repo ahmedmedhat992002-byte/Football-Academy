@@ -177,12 +177,11 @@ export function RouteProgressProvider({
         </div>
       )}
 
-      {/* Luxury FIFA FC Loading Card when navigation takes > 180ms or on slow network */}
+      {/* Pure Cosmic FIFA FC Emblem when navigation lags (> 420ms) or hangs */}
       {showMiniLogo && (
         <LogoLoader
           variant="floating"
-          text={"جاري تحميل الصفحة\nوتحديث البيانات..."}
-          isSlowNetwork={isSlow}
+          size="md"
         />
       )}
 
