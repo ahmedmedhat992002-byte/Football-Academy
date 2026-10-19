@@ -199,11 +199,17 @@ export async function getSubscriptions(filters?: {
     // Ignore import failure
   }
 
+  const today = new Date().toISOString().split("T")[0];
   const enriched = unique.map((s) => {
     const player = playerMap.get(s.player_id);
     const plan = planMap.get(s.plan_id);
+    let currentStatus = s.status;
+    if (currentStatus === "active" && s.end_date && s.end_date < today) {
+      currentStatus = "overdue";
+    }
     return {
       ...s,
+      status: currentStatus,
       player_name: player?.full_name || s.player_name || "لاعب",
       group_name: player?.group_name || s.group_name || "الفريق",
       plan_name: plan?.name || s.plan_name || "الاشتراك الشهري",

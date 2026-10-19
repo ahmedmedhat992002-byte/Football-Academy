@@ -16,7 +16,9 @@ import {
   Database,
   Save,
   CheckCircle2,
+  Camera,
 } from "lucide-react";
+import { AvatarUploader } from "@/components/ui/avatar-uploader";
 
 export default function AdminSettingsPage() {
   const [saved, setSaved] = useState(false);
@@ -24,8 +26,32 @@ export default function AdminSettingsPage() {
   const [managerName, setManagerName] = useState("أحمد مدحت");
   const [email, setEmail] = useState("ahmedmedhat992002@gmail.com");
   const [phone, setPhone] = useState("01012345678");
+  const [userAvatar, setUserAvatar] = useState<string>("");
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedAvatar = localStorage.getItem("academy_user_avatar");
+      if (savedAvatar) setUserAvatar(savedAvatar);
+    }
+  }, []);
+
+  const handleAvatarChange = (newAvatar: string) => {
+    setUserAvatar(newAvatar);
+    if (typeof window !== "undefined") {
+      if (newAvatar) {
+        localStorage.setItem("academy_user_avatar", newAvatar);
+      } else {
+        localStorage.removeItem("academy_user_avatar");
+      }
+      window.dispatchEvent(new Event("academy_avatar_changed"));
+    }
+  };
 
   const handleSave = () => {
+    if (typeof window !== "undefined" && userAvatar) {
+      localStorage.setItem("academy_user_avatar", userAvatar);
+      window.dispatchEvent(new Event("academy_avatar_changed"));
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -193,16 +219,21 @@ export default function AdminSettingsPage() {
           <Card className="p-5 border-slate-200/80 text-start">
             <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
               <User className="h-4 w-4 text-amber-500" />
-              <h3 className="text-sm font-extrabold text-slate-900">حساب المسؤول</h3>
+              <h3 className="text-sm font-extrabold text-slate-900">حساب المسؤول والصورة الشخصية</h3>
             </div>
-            <div className="mt-4 space-y-3">
-              <div className="flex items-center gap-3 p-2 rounded-xl bg-slate-50">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/15 text-amber-500 border border-amber-500/30 font-bold text-sm">
-                  أم
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-900">أحمد مدحت</p>
-                  <p className="text-[10px] text-slate-500">مدير النظام</p>
+            <div className="mt-4 space-y-4">
+              <AvatarUploader
+                value={userAvatar}
+                onChange={handleAvatarChange}
+                label="الصورة الشخصية"
+                sublabel="ارفع صورتك أو اختر أيقونة رياضية لحسابك"
+                size="md"
+              />
+
+              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                <div className="text-xs">
+                  <p className="font-extrabold text-slate-900">أحمد مدحت</p>
+                  <p className="text-[10px] text-amber-700 font-semibold">مدير النظام والأكاديمية</p>
                 </div>
               </div>
               <div className="text-[10px] text-slate-400 border-t border-slate-100 pt-2">

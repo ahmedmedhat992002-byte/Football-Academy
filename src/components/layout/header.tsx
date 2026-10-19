@@ -22,7 +22,9 @@ import {
   ArrowRight,
   PanelRightClose,
   PanelRightOpen,
+  Camera,
 } from "lucide-react";
+import { AvatarUploader } from "@/components/ui/avatar-uploader";
 import { logoutAction } from "@/lib/auth/actions";
 import {
   getNotifications,
@@ -51,6 +53,25 @@ export function Header({
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("أكتوبر 2026");
   const [notifications, setNotifications] = useState<SystemNotification[]>([]);
+
+  // Avatar state
+  const [userAvatar, setUserAvatar] = useState<string>("");
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [tempAvatar, setTempAvatar] = useState<string>("");
+
+  useEffect(() => {
+    const loadAvatar = () => {
+      try {
+        const stored = localStorage.getItem("academy_user_avatar");
+        if (stored) setUserAvatar(stored);
+      } catch {
+        // Ignore
+      }
+    };
+    loadAvatar();
+    window.addEventListener("academy_avatar_changed", loadAvatar);
+    return () => window.removeEventListener("academy_avatar_changed", loadAvatar);
+  }, []);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -430,8 +451,13 @@ export function Header({
               onClick={() => setShowDropdown(!showDropdown)}
               className="flex items-center gap-2 rounded-xl p-1 hover:bg-[#131e28] transition-colors text-start cursor-pointer group active:scale-95"
             >
-              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-amber-500/15 text-amber-400 font-bold ring-2 ring-amber-400/60 shadow-md shadow-amber-950/50 shrink-0">
-                <User className="h-4 w-4" />
+              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-amber-500/15 text-amber-400 font-bold ring-2 ring-amber-400/60 shadow-md shadow-amber-950/50 shrink-0 overflow-hidden">
+                {userAvatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={userAvatar} alt={displayName} className="h-full w-full object-cover" />
+                ) : (
+                  <User className="h-4 w-4" />
+                )}
               </div>
 
               <div className="hidden md:block text-start">
@@ -461,6 +487,18 @@ export function Header({
                   <Sparkles className="h-3.5 w-3.5 text-amber-400" />
                   <span>لوحة التحكم ({roleLabel})</span>
                 </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTempAvatar(userAvatar);
+                    setShowDropdown(false);
+                    setShowAvatarModal(true);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-slate-200 hover:bg-[#1c2b38] transition-colors cursor-pointer text-start"
+                >
+                  <Camera className="h-3.5 w-3.5 text-amber-400" />
+                  <span>تغيير الصورة الشخصية</span>
+                </button>
                 {userRole === "admin" && (
                   <Link
                     href="/admin/settings"
@@ -544,6 +582,62 @@ export function Header({
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Profile Photo Update Modal */}
+      {showAvatarModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="relative w-full max-w-md rounded-3xl bg-[#0D1117] border border-amber-500/40 p-6 text-start space-y-4 shadow-2xl text-white">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Camera className="h-5 w-5 text-amber-400" />
+                <h3 className="font-bold text-sm text-white">
+                  تحديث صورتك الشخصية ({displayName})
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAvatarModal(false)}
+                className="rounded-full p-1 text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <AvatarUploader
+              value={tempAvatar}
+              onChange={setTempAvatar}
+              label="اختر صورة جديدة"
+              sublabel="ارفع صورتك من جهازك أو اختر رمزاً رياضياً معتمداً"
+            />
+
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setShowAvatarModal(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white cursor-pointer"
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    localStorage.setItem("academy_user_avatar", tempAvatar);
+                    setUserAvatar(tempAvatar);
+                    window.dispatchEvent(new Event("academy_avatar_changed"));
+                  } catch {
+                    // Ignore
+                  }
+                  setShowAvatarModal(false);
+                }}
+                className="bg-[#F59E0B] hover:bg-[#FBBF24] text-slate-950 font-black text-xs px-5 py-2.5 rounded-xl shadow-md cursor-pointer transition-colors"
+              >
+                حفظ وتحديث الصورة
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </header>

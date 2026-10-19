@@ -37,12 +37,15 @@ import {
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
+import { AvatarUploader } from "@/components/ui/avatar-uploader";
 
 export function RegisterForm() {
   const router = useRouter();
   const [accountType, setAccountType] = useState<"parent" | "coach">("parent");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [coachSubmitted, setCoachSubmitted] = useState<CoachProfile | null>(null);
+  const [parentAvatar, setParentAvatar] = useState<string>("");
+  const [coachAvatar, setCoachAvatar] = useState<string>("");
   const [isPending, startTransition] = useTransition();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
@@ -100,6 +103,14 @@ export function RegisterForm() {
 
   const onParentSubmit = (data: RegisterInput) => {
     setErrorMessage(null);
+    if (parentAvatar) {
+      try {
+        localStorage.setItem("academy_user_avatar", parentAvatar);
+        window.dispatchEvent(new Event("academy_avatar_changed"));
+      } catch {
+        // Ignore
+      }
+    }
     startTransition(async () => {
       const result = await registerAction(data);
       if (result.success) {
@@ -117,6 +128,14 @@ export function RegisterForm() {
 
   const onCoachSubmit = (data: CoachRegisterInput) => {
     setErrorMessage(null);
+    if (coachAvatar) {
+      try {
+        localStorage.setItem("academy_user_avatar", coachAvatar);
+        window.dispatchEvent(new Event("academy_avatar_changed"));
+      } catch {
+        // Ignore
+      }
+    }
     startTransition(async () => {
       const result = await registerCoachAction(data);
       if (result.success && result.coach) {
@@ -384,6 +403,15 @@ export function RegisterForm() {
                   <span>بيانات ولي الأمر الأساسية</span>
                 </div>
 
+                {/* Avatar Uploader */}
+                <AvatarUploader
+                  value={parentAvatar}
+                  onChange={setParentAvatar}
+                  label="صورة الملف الشخصي أو اللاعب"
+                  sublabel="ارفع صورة لتظهر في بطاقة اللاعب وحسابك"
+                  size="sm"
+                />
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Full Name */}
                 <div className="space-y-1">
@@ -542,6 +570,15 @@ export function RegisterForm() {
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-3">
+              {/* Profile Photo Uploader */}
+              <AvatarUploader
+                value={coachAvatar}
+                onChange={setCoachAvatar}
+                label="صورة الكابتن الشخصية"
+                sublabel="ارفع صورتك بالزي الرياضي لتظهر في ملفك الشخصي ودليل الجهاز الفني"
+                size="md"
+              />
+
               <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
                 <Award className="h-4 w-4 text-amber-600" />
                 <span>بيانات الكابتن والمؤهلات التدريبية</span>

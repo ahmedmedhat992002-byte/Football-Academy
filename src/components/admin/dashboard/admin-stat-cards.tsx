@@ -9,6 +9,7 @@ import {
   TrendingUp,
   ChevronLeft,
   AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 
 interface AdminStatCardsProps {
@@ -30,7 +31,7 @@ export function AdminStatCards({
   paymentCount,
   overdueSubscriptions,
 }: AdminStatCardsProps) {
-  const displayOverdue = overdueSubscriptions > 0 ? overdueSubscriptions : 8;
+  const isOverdueAlert = overdueSubscriptions > 0;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -149,34 +150,85 @@ export function AdminStatCards({
         </div>
       </div>
 
-      {/* Card 4: Overdue Subscriptions - Alert Visual State */}
-      <div className="relative overflow-hidden rounded-2xl bg-[#FFF5F5] border border-[#FECACA] p-4 sm:p-5 shadow-sm hover:shadow-md transition-all">
+      {/* Card 4: Overdue Subscriptions - Strictly Real Count */}
+      <div
+        className={`relative overflow-hidden rounded-2xl p-4 sm:p-5 shadow-xs transition-all ${
+          isOverdueAlert
+            ? "bg-[#FFF5F5] border border-[#FECACA]"
+            : "bg-white border border-slate-200/80"
+        }`}
+      >
         <div className="flex items-start justify-between gap-3">
           <div className="text-start">
             <div className="flex items-center gap-1.5">
-              <span className="text-xs font-black text-rose-700">الاشتراكات المتأخرة</span>
-              <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
+              <span
+                className={`text-xs font-black ${
+                  isOverdueAlert ? "text-rose-700" : "text-slate-700"
+                }`}
+              >
+                الاشتراكات المتأخرة
+              </span>
+              {isOverdueAlert ? (
+                <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
+              ) : (
+                <span className="flex h-2 w-2 rounded-full bg-emerald-500" />
+              )}
             </div>
-            <div className="text-2xl sm:text-3xl font-black text-rose-600 mt-1.5 sm:mt-2">
-              {formatNumber(displayOverdue)}
+            <div
+              className={`text-2xl sm:text-3xl font-black mt-1.5 sm:mt-2 ${
+                isOverdueAlert ? "text-rose-600" : "text-slate-900"
+              }`}
+            >
+              {formatNumber(overdueSubscriptions)}
             </div>
-            <div className="flex items-center gap-1 text-[11px] font-bold text-rose-600 mt-1.5 sm:mt-2">
-              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-              <span>تتطلب متابعة سداد عاجلة</span>
+            <div
+              className={`flex items-center gap-1 text-[11px] font-bold mt-1.5 sm:mt-2 ${
+                isOverdueAlert ? "text-rose-600" : "text-emerald-600"
+              }`}
+            >
+              {isOverdueAlert ? (
+                <>
+                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                  <span>تتطلب متابعة سداد عاجلة</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  <span>لا توجد متأخرات • الحسابات منتظمة</span>
+                </>
+              )}
             </div>
           </div>
-          <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 border border-rose-200 shadow-xs shrink-0">
+          <div
+            className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-2xl shadow-xs shrink-0 ${
+              isOverdueAlert
+                ? "bg-rose-100 text-rose-600 border border-rose-200"
+                : "bg-emerald-50 text-emerald-600 border border-emerald-100"
+            }`}
+          >
             <FileWarning className="h-5 w-5" />
           </div>
         </div>
 
         {/* Actionable clickable link / button */}
-        <div className="mt-3.5 sm:mt-4 pt-3 flex items-center justify-between border-t border-rose-200/80">
+        <div
+          className={`mt-3.5 sm:mt-4 pt-3 flex items-center justify-between border-t ${
+            isOverdueAlert ? "border-rose-200/80" : "border-slate-100"
+          }`}
+        >
           <Link
             href="/admin/subscriptions"
-            className="w-full flex items-center justify-between group/link px-3 py-1.5 rounded-xl bg-white/90 border border-rose-200 hover:bg-rose-600 hover:text-white hover:border-rose-600 text-rose-700 font-bold text-xs active:scale-95 transition-all shadow-xs cursor-pointer"
+            className={`w-full flex items-center justify-between group/link px-3 py-1.5 rounded-xl border text-xs font-bold active:scale-95 transition-all shadow-xs cursor-pointer ${
+              isOverdueAlert
+                ? "bg-white/90 border-rose-200 hover:bg-rose-600 hover:text-white hover:border-rose-600 text-rose-700"
+                : "bg-slate-50 border-slate-200 hover:bg-[#F59E0B] hover:text-slate-950 hover:border-[#F59E0B] text-slate-700"
+            }`}
           >
-            <span>عرض قائمة المتأخرين للسداد ←</span>
+            <span>
+              {isOverdueAlert
+                ? "عرض قائمة المتأخرين للسداد ←"
+                : "مراجعة كافة الاشتراكات ←"}
+            </span>
             <ChevronLeft className="h-4 w-4 transition-transform group-hover/link:-translate-x-1" />
           </Link>
         </div>
