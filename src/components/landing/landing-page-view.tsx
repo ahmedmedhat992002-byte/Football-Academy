@@ -215,11 +215,11 @@ export function LandingPageView({
           },
           {
             id: "coach-2",
-            full_name: "كابتن أحمد مدحت",
-            specialization: "مدرب اللياقة والتأهيل البدني والحركي",
-            experience_years: "6 سنوات",
-            bio: "أخصائي الإعداد البدني والتوافق العضلي للفئات السنية، حاصل على دبلومة اللياقة التخصصية من برشلونة.",
-            phone: "01012345678",
+            full_name: "كابتن حسام الدين خالد",
+            specialization: "المدير الفني والتنفيذي للأكاديمية",
+            experience_years: "10 سنوات",
+            bio: "إشراف عام وتخطيط فني وتأسيس مهاري وبدني لكافة فرق وبراعم الأكاديمية.",
+            phone: "01000419832",
           },
           {
             id: "coach-3",
@@ -1118,7 +1118,7 @@ export function LandingPageView({
                 {/* Direct WhatsApp Confirmation Link */}
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
                   <a
-                    href={`https://api.whatsapp.com/send?phone=2001012345678&text=${encodeURIComponent(
+                    href={`https://api.whatsapp.com/send?phone=2001000419832&text=${encodeURIComponent(
                       `مرحباً إدارة أكاديمية FIFA FC، قمت للتو بتسجيل طلب اختبار أداء مجاني للاعب (${lastSubmittedLead?.childName || "اللاعب"}) فئة (${lastSubmittedLead?.ageCategory || "U10"})، رقم التواصل: (${lastSubmittedLead?.phone || ""}). أود تأكيد الموعد.`
                     )}`}
                     target="_blank"
@@ -1605,7 +1605,7 @@ export function LandingPageView({
               </p>
               <div className="pt-1 flex items-center gap-2">
                 <a
-                  href="https://api.whatsapp.com/send?phone=2001012345678"
+                  href="https://api.whatsapp.com/send?phone=2001000419832"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1.5 hover:bg-emerald-600/30 transition-colors"
@@ -1650,7 +1650,7 @@ export function LandingPageView({
                 </p>
                 <p className="flex items-center gap-2">
                   <Phone className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-                  <span className="font-mono">01012345678 / 01198765432</span>
+                  <span className="font-mono">01000419832 / 01198765432</span>
                 </p>
                 <p className="flex items-center gap-2">
                   <Clock className="h-3.5 w-3.5 text-amber-400 shrink-0" />
@@ -1673,7 +1673,7 @@ export function LandingPageView({
 
       {/* Floating WhatsApp Quick Action Button (Bottom Left) */}
       <a
-        href="https://api.whatsapp.com/send?phone=2001012345678&text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D9%88%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%A7%D9%84%D8%A7%D8%B4%D8%AA%D8%B1%D8%A7%D9%83%20%D9%81%D9%8A%20%D8%A3%D9%83%D8%A7%D8%AF%D9%8A%D9%85%D9%8A%D8%A9%20FIFA%20FC"
+        href="https://api.whatsapp.com/send?phone=2001000419832&text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D9%88%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%A7%D9%84%D8%A7%D8%B4%D8%AA%D8%B1%D8%A7%D9%83%20%D9%81%D9%8A%20%D8%A3%D9%83%D8%A7%D8%AF%D9%8A%D9%85%D9%8A%D8%A9%20FIFA%20FC"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="تواصل عبر واتساب"

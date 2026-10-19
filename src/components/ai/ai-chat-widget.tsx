@@ -52,8 +52,8 @@ interface AiChatWidgetProps {
   userName?: string;
 }
 
-const SUPPORT_PHONE = "01012345678";
-const SUPPORT_WHATSAPP = "201012345678";
+const SUPPORT_PHONE = "01000419832";
+const SUPPORT_WHATSAPP = "201000419832";
 
 // Configuration for each user role
 const ROLE_CONFIGS: Record<
@@ -69,7 +69,7 @@ const ROLE_CONFIGS: Record<
   admin: {
     roleTitle: "مدير الأكاديمية",
     roleBadge: "ADMIN • إدارة الأكاديمية",
-    defaultName: "أحمد مدحت",
+    defaultName: "حسام الدين خالد",
     getWelcomeMessage: (name) =>
       `مرحباً بك يا ${name}! 🏆 بصفتي مساعدك الإداري والتقني الذكي، أنا جاهز لمساعدتك في متابعة الإيرادات، إدارة اللاعبين، اعتماد المدربين، وتقديم الدعم الفني المباشر.`,
     quickChips: [

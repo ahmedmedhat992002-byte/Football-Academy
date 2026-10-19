@@ -41,7 +41,7 @@ interface HeaderProps {
 }
 
 export function Header({
-  userName = "أحمد مدحت",
+  userName = "حسام الدين خالد",
   userRole = "admin",
   isSidebarOpen = true,
   onToggleSidebar,
@@ -143,7 +143,7 @@ export function Header({
     userRole === "parent" ? "ولي أمر اللاعب" : userRole === "coach" ? "كابتن مدرب" : "مدير الأكاديمية";
 
   const displayName =
-    !userName || userName === "المستخدم" ? "أحمد مدحت" : userName;
+    !userName || userName === "المستخدم" ? "حسام الدين خالد" : userName;
 
   const dashboardHref =
     userRole === "coach" ? "/coach" : userRole === "parent" ? "/parent" : "/admin";

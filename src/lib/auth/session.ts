@@ -21,9 +21,9 @@ export const DEMO_USERS: Record<UserRole, CurrentUser> = {
   admin: {
     id: "00000000-0000-0000-0000-000000000001",
     email: PRIMARY_ADMIN_EMAIL,
-    fullName: "أحمد مدحت (مدير الأكاديمية)",
+    fullName: "حسام الدين خالد (مدير الأكاديمية)",
     role: "admin",
-    phone: "01012345678",
+    phone: "01000419832",
   },
   coach: {
     id: "00000000-0000-0000-0000-000000000002",
@@ -58,7 +58,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
         // Enforce: only authorized email can be admin
         if (isAdminEmail(parsed.email)) {
           parsed.role = "admin";
-          parsed.fullName = parsed.fullName || "أحمد مدحت (مدير الأكاديمية)";
+          parsed.fullName = parsed.fullName || "حسام الدين خالد (مدير الأكاديمية)";
         } else if (parsed.role === "admin") {
           parsed.role = "parent";
         }
@@ -70,7 +70,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
         if (parsed && parsed.role && parsed.id) {
           if (isAdminEmail(parsed.email)) {
             parsed.role = "admin";
-            parsed.fullName = parsed.fullName || "أحمد مدحت (مدير الأكاديمية)";
+            parsed.fullName = parsed.fullName || "حسام الدين خالد (مدير الأكاديمية)";
           } else if (parsed.role === "admin") {
             parsed.role = "parent";
           }
@@ -114,7 +114,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
       return {
         id: profile.id,
         email: userEmail,
-        fullName: isUserAdmin ? (profile.full_name || "أحمد مدحت (مدير الأكاديمية)") : profile.full_name,
+        fullName: isUserAdmin ? (profile.full_name || "حسام الدين خالد (مدير الأكاديمية)") : profile.full_name,
         role: resolvedRole,
         phone: profile.phone,
       };
@@ -125,7 +125,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
       id: user.id,
       email: userEmail,
       fullName: isUserAdmin
-        ? "أحمد مدحت (مدير الأكاديمية)"
+        ? "حسام الدين خالد (مدير الأكاديمية)"
         : (user.user_metadata?.full_name || "مستخدم الأكاديمية"),
       role: isUserAdmin ? "admin" : ((user.user_metadata?.role as UserRole) || "parent"),
     };

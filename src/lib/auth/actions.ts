@@ -296,7 +296,7 @@ export async function loginAction(data: LoginInput): Promise<AuthActionResult> {
         ? "admin"
         : ((authData.user.user_metadata?.role as UserRole) || "parent");
       let fullName = isUserAdmin
-        ? "أحمد مدحت (مدير الأكاديمية)"
+        ? "حسام الدين خالد (مدير الأكاديمية)"
         : (authData.user.user_metadata?.full_name || authData.user.email);
       const coachStatus = authData.user.user_metadata?.status;
 
@@ -369,9 +369,9 @@ export async function loginAction(data: LoginInput): Promise<AuthActionResult> {
     const adminUser = {
       id: "admin-master-001",
       email: PRIMARY_ADMIN_EMAIL,
-      fullName: "أحمد مدحت (مدير الأكاديمية)",
+      fullName: "حسام الدين خالد (مدير الأكاديمية)",
       role: "admin" as const,
-      phone: "01012345678",
+      phone: "01000419832",
     };
     const cookieStore = await cookies();
     cookieStore.set("academy_demo_user", JSON.stringify(adminUser), {

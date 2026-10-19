@@ -23,15 +23,21 @@ import { AvatarUploader } from "@/components/ui/avatar-uploader";
 export default function AdminSettingsPage() {
   const [saved, setSaved] = useState(false);
   const [academyName, setAcademyName] = useState("FIFA FC ACADEMY");
-  const [managerName, setManagerName] = useState("أحمد مدحت");
-  const [email, setEmail] = useState("ahmedmedhat992002@gmail.com");
-  const [phone, setPhone] = useState("01012345678");
+  const [managerName, setManagerName] = useState("حسام الدين خالد");
+  const [email, setEmail] = useState("hossameldinkhaled244@gmail.com");
+  const [phone, setPhone] = useState("01000419832");
   const [userAvatar, setUserAvatar] = useState<string>("");
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
       const savedAvatar = localStorage.getItem("academy_user_avatar");
       if (savedAvatar) setUserAvatar(savedAvatar);
+      const savedManager = localStorage.getItem("academy_manager_name");
+      if (savedManager) setManagerName(savedManager);
+      const savedEmail = localStorage.getItem("academy_manager_email");
+      if (savedEmail) setEmail(savedEmail);
+      const savedPhone = localStorage.getItem("academy_manager_phone");
+      if (savedPhone) setPhone(savedPhone);
     }
   }, []);
 
@@ -48,8 +54,11 @@ export default function AdminSettingsPage() {
   };
 
   const handleSave = () => {
-    if (typeof window !== "undefined" && userAvatar) {
-      localStorage.setItem("academy_user_avatar", userAvatar);
+    if (typeof window !== "undefined") {
+      if (userAvatar) localStorage.setItem("academy_user_avatar", userAvatar);
+      localStorage.setItem("academy_manager_name", managerName);
+      localStorage.setItem("academy_manager_email", email);
+      localStorage.setItem("academy_manager_phone", phone);
       window.dispatchEvent(new Event("academy_avatar_changed"));
     }
     setSaved(true);
@@ -232,7 +241,7 @@ export default function AdminSettingsPage() {
 
               <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                 <div className="text-xs">
-                  <p className="font-extrabold text-slate-900">أحمد مدحت</p>
+                  <p className="font-extrabold text-slate-900">{managerName}</p>
                   <p className="text-[10px] text-amber-700 font-semibold">مدير النظام والأكاديمية</p>
                 </div>
               </div>

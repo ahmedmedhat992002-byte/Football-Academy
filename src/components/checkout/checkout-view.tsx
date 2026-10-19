@@ -487,7 +487,7 @@ export function CheckoutView({
                     <p className="font-mono text-sm font-black text-white bg-[#0e1720] p-2 rounded-lg inline-block border border-amber-500/40">
                       football.academy@instapay
                     </p>
-                    <p className="text-[11px] text-slate-400">أو رقم المحفظة / فودافون كاش: 01012345678</p>
+                    <p className="text-[11px] text-slate-400">أو رقم المحفظة / فودافون كاش: 01000419832</p>
                   </div>
 
                   <div className="space-y-1 pt-1">

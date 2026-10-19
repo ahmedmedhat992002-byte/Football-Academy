@@ -25,7 +25,7 @@ export async function GET(request: Request) {
           : ((user.user_metadata?.role as UserRole) || "parent");
 
         let fullName = isUserAdmin
-          ? (user.user_metadata?.full_name || "كابتن أحمد مدحت (مدير الأكاديمية)")
+          ? (user.user_metadata?.full_name || "كابتن حسام الدين خالد (مدير الأكاديمية)")
           : (user.user_metadata?.full_name ||
              user.user_metadata?.name ||
              user.email?.split("@")[0] ||
