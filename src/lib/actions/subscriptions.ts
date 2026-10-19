@@ -24,6 +24,7 @@ import {
   saveSharedSubscription,
   getSharedRegisteredUsers,
 } from "@/lib/data/shared-store";
+import { cachedFetch, invalidateCache } from "@/lib/data/cache-manager";
 
 const isUUID = (str?: string | null): boolean =>
   !!str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
@@ -127,9 +128,11 @@ export async function getSubscriptions(filters?: {
   playerId?: string;
   status?: string;
 }): Promise<PlayerSubscription[]> {
-  const [players, plans] = await Promise.all([getPlayers(), plansModule.getSubscriptionPlans()]);
-  const playerMap = new Map(players.map((p) => [p.id, p]));
-  const planMap = new Map(plans.map((p) => [p.id, p]));
+  const cacheKey = `subscriptions_${filters?.playerId || "all"}_${filters?.status || "all"}`;
+  return cachedFetch(cacheKey, async () => {
+    const [players, plans] = await Promise.all([getPlayers(), plansModule.getSubscriptionPlans()]);
+    const playerMap = new Map(players.map((p) => [p.id, p]));
+    const planMap = new Map(plans.map((p) => [p.id, p]));
 
   try {
     const supabase = await createClient();
@@ -218,11 +221,12 @@ export async function getSubscriptions(filters?: {
     };
   });
 
-  return enriched.filter((s) => {
-    if (filters?.playerId && s.player_id !== filters.playerId) return false;
-    if (filters?.status && s.status !== filters.status) return false;
-    return true;
-  });
+    return enriched.filter((s) => {
+      if (filters?.playerId && s.player_id !== filters.playerId) return false;
+      if (filters?.status && s.status !== filters.status) return false;
+      return true;
+    });
+  }, 45000);
 }
 
 export async function saveSubscription(
@@ -349,6 +353,7 @@ export async function saveSubscription(
   saveSharedSubscription(updatedSub);
   await saveStoredSubscriptions(custom);
 
+  invalidateCache("subscriptions");
   revalidatePath("/admin/subscriptions");
   revalidatePath("/parent");
   return { success: true, subscription: updatedSub };
@@ -406,6 +411,7 @@ export async function approveSubscriptionAction(
     targetRole: "parent",
   });
 
+  invalidateCache("subscriptions");
   revalidatePath("/admin/subscriptions");
   revalidatePath("/admin");
   revalidatePath("/parent");

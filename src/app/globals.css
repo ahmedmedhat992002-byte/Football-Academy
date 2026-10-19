@@ -115,7 +115,7 @@ textarea {
 }
 
 .animate-page-enter {
-  animation: pageEnterAnim 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: pageEnterAnim 0.11s cubic-bezier(0.16, 1, 0.3, 1) both;
   will-change: opacity, transform;
 }
 

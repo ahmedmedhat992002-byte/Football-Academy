@@ -10,6 +10,7 @@ import {
   saveSharedPlayer,
   getSharedRegisteredUsers,
 } from "@/lib/data/shared-store";
+import { cachedFetch, invalidateCache } from "@/lib/data/cache-manager";
 
 const PLAYERS_STORAGE_COOKIE = "academy_custom_players";
 
@@ -48,7 +49,7 @@ async function saveCustomPlayers(players: Player[]): Promise<void> {
 }
 
 /**
- * Fetch players with optional filtering
+ * Fetch players with optional filtering - cached for instantaneous sub-10ms navigation
  */
 export async function getPlayers(options?: {
   groupId?: string;
@@ -56,6 +57,9 @@ export async function getPlayers(options?: {
   search?: string;
 }): Promise<Player[]> {
   const { groupId, status, search } = options || {};
+  const cacheKey = `players_${groupId || "all"}_${status || "all"}_${search || ""}`;
+
+  return cachedFetch(cacheKey, async () => {
 
   try {
     const supabase = await createClient();
@@ -153,7 +157,8 @@ export async function getPlayers(options?: {
     );
   }
 
-  return result;
+    return result;
+  }, 45000);
 }
 
 /**
@@ -291,6 +296,7 @@ export async function savePlayer(
   saveSharedPlayer(updatedPlayer);
   await saveCustomPlayers(currentCustom);
 
+  invalidateCache("players");
   revalidatePath("/admin/players");
   revalidatePath("/coach/groups");
 
@@ -305,6 +311,7 @@ export async function deletePlayer(playerId: string): Promise<{ success: boolean
     const supabase = await createClient();
     const { error } = await (supabase.from("players") as any).delete().eq("id", playerId);
     if (!error) {
+      invalidateCache("players");
       revalidatePath("/admin/players");
       return { success: true };
     }
@@ -316,6 +323,7 @@ export async function deletePlayer(playerId: string): Promise<{ success: boolean
   const filtered = currentCustom.filter((p) => p.id !== playerId);
   await saveCustomPlayers(filtered);
 
+  invalidateCache("players");
   revalidatePath("/admin/players");
 
   return { success: true };

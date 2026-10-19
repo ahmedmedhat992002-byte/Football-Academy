@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useTransition } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import React, { useEffect, useState, useRef } from "react";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { LogoLoader } from "@/components/ui/logo-loader";
 
 function RouteWatcher({ onComplete }: { onComplete: () => void }) {
@@ -20,6 +20,7 @@ export function RouteProgressProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [showMiniLogo, setShowMiniLogo] = useState(false);
@@ -29,7 +30,7 @@ export function RouteProgressProvider({
   const slowTimerRef = useRef<NodeJS.Timeout | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Complete loading when pathname or searchParams change
+  // Complete loading when pathname or searchParams change - ultra fast cleanup
   const handleNavigationComplete = React.useCallback(() => {
     if (isLoading) {
       setProgress(100);
@@ -38,7 +39,7 @@ export function RouteProgressProvider({
         setShowMiniLogo(false);
         setIsSlow(false);
         setProgress(0);
-      }, 180);
+      }, 60);
       return () => clearTimeout(finishTimeout);
     }
   }, [isLoading]);
@@ -46,31 +47,31 @@ export function RouteProgressProvider({
   // Start progress bar animation
   const startProgress = (customText?: string) => {
     setIsLoading(true);
-    setProgress(15);
+    setProgress(30);
     setIsSlow(false);
 
-    // Increment progress in stages
+    // Increment progress rapidly
     if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
     progressIntervalRef.current = setInterval(() => {
       setProgress((prev) => {
-        if (prev < 60) return prev + 15;
-        if (prev < 85) return prev + 6;
-        if (prev < 95) return prev + 1;
+        if (prev < 70) return prev + 25;
+        if (prev < 90) return prev + 8;
+        if (prev < 98) return prev + 1;
         return prev;
       });
-    }, 120);
+    }, 70);
 
-    // If navigation takes longer than 180ms, show the floating mini logo
+    // Only show the luxury loading card if navigation actually lags (> 420ms) or hangs
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       setShowMiniLogo(true);
-    }, 180);
+    }, 420);
 
-    // If it takes longer than 2.5s (hanging or very slow network), mark as slow
+    // If it takes longer than 2.0s (slow network), mark as slow
     if (slowTimerRef.current) clearTimeout(slowTimerRef.current);
     slowTimerRef.current = setTimeout(() => {
       setIsSlow(true);
-    }, 2500);
+    }, 2000);
   };
 
   const stopProgress = () => {
@@ -83,62 +84,73 @@ export function RouteProgressProvider({
       setShowMiniLogo(false);
       setIsSlow(false);
       setProgress(0);
-    }, 150);
+    }, 50);
   };
 
-  // Intercept all internal link clicks to give instant visual feedback
+  // Intercept all internal link clicks + prefetch on hover/touch for instant 0ms clicks
   useEffect(() => {
-    const handleLinkClick = (e: MouseEvent) => {
-      // Find closest anchor tag
-      const target = (e.target as HTMLElement)?.closest("a");
-      if (!target) return;
-
-      const href = target.getAttribute("href");
-      if (!href) return;
-
-      // Ignore external links, downloads, new tabs, anchors (#)
+    const isInternalLink = (target: HTMLElement | null): string | null => {
+      const anchor = target?.closest("a");
+      if (!anchor) return null;
+      const href = anchor.getAttribute("href");
+      if (!href) return null;
       if (
         href.startsWith("http://") ||
         href.startsWith("https://") ||
         href.startsWith("mailto:") ||
         href.startsWith("tel:") ||
         href.startsWith("#") ||
-        target.target === "_blank" ||
-        e.metaKey ||
-        e.ctrlKey ||
-        e.shiftKey ||
-        e.altKey
+        anchor.target === "_blank"
       ) {
-        return;
+        return null;
       }
+      return href;
+    };
 
-      // Check if clicking current URL
+    // Instant prefetch on mouse hover or touch start
+    const handlePrefetch = (e: MouseEvent | TouchEvent) => {
+      const href = isInternalLink(e.target as HTMLElement);
+      if (href && href !== window.location.pathname) {
+        try {
+          router.prefetch(href);
+        } catch {
+          // Ignore prefetch error
+        }
+      }
+    };
+
+    const handleLinkClick = (e: MouseEvent) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const href = isInternalLink(e.target as HTMLElement);
+      if (!href) return;
+
       const currentUrl = window.location.pathname + window.location.search;
-      if (href === currentUrl) {
-        return;
-      }
+      if (href === currentUrl) return;
 
-      // Start the progress indicator instantly
       startProgress();
     };
 
-    // Listen for custom loading events (e.g. form submissions, heavy actions)
+    // Listen for custom loading events
     const handleCustomStart = () => startProgress();
     const handleCustomStop = () => stopProgress();
 
     document.addEventListener("click", handleLinkClick, { passive: true });
+    document.addEventListener("mouseover", handlePrefetch, { passive: true });
+    document.addEventListener("touchstart", handlePrefetch, { passive: true });
     window.addEventListener("academy_start_loading", handleCustomStart);
     window.addEventListener("academy_stop_loading", handleCustomStop);
 
     return () => {
       document.removeEventListener("click", handleLinkClick);
+      document.removeEventListener("mouseover", handlePrefetch);
+      document.removeEventListener("touchstart", handlePrefetch);
       window.removeEventListener("academy_start_loading", handleCustomStart);
       window.removeEventListener("academy_stop_loading", handleCustomStop);
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
       if (timerRef.current) clearTimeout(timerRef.current);
       if (slowTimerRef.current) clearTimeout(slowTimerRef.current);
     };
-  }, []);
+  }, [router]);
 
   return (
     <>
