@@ -8,6 +8,7 @@ import {
   approveCoachAction,
   rejectCoachAction,
   saveCoachAction,
+  deleteCoachAction,
 } from "@/lib/actions/coaches";
 import { assignCoachToGroup } from "@/lib/actions/groups";
 import type { Player, Group, Session, Evaluation } from "@/lib/data/academy-store";
@@ -32,6 +33,8 @@ import {
   Star,
   ExternalLink,
   Layers,
+  Edit2,
+  Trash2,
 } from "lucide-react";
 
 interface CoachesManagerViewProps {
@@ -174,6 +177,16 @@ export function CoachesManagerView({
   const [newSpecialization, setNewSpecialization] = useState("مدير فني للبراعم (U10 & U12)");
   const [newExperience, setNewExperience] = useState("5 سنوات — رخصة CAF B");
 
+  // Edit coach modal state
+  const [editingCoach, setEditingCoach] = useState<CoachProfile | null>(null);
+  const [editFullName, setEditFullName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editPassword, setEditPassword] = useState("");
+  const [editSpecialization, setEditSpecialization] = useState("");
+  const [editExperience, setEditExperience] = useState("");
+  const [editBio, setEditBio] = useState("");
+
   const pendingCoaches = useMemo(
     () => coaches.filter((c) => c.status === "pending_approval"),
     [coaches]
@@ -262,6 +275,73 @@ export function CoachesManagerView({
         });
       }
     });
+  };
+
+  const handleStartEdit = (coach: CoachProfile) => {
+    setEditingCoach(coach);
+    setEditFullName(coach.full_name);
+    setEditEmail(coach.email);
+    setEditPhone(coach.phone);
+    setEditPassword(coach.password || "coach123");
+    setEditSpecialization(coach.specialization || "مدير فني للبراعم");
+    setEditExperience(coach.experience_years || "3 سنوات");
+    setEditBio(coach.bio || "");
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCoach) return;
+
+    startTransition(async () => {
+      const res = await saveCoachAction({
+        id: editingCoach.id,
+        full_name: editFullName,
+        email: editEmail,
+        phone: editPhone,
+        password: editPassword,
+        specialization: editSpecialization,
+        experience_years: editExperience,
+        bio: editBio,
+      });
+
+      if (res.success && res.coach) {
+        setCoaches((prev) =>
+          prev.map((c) => (c.id === editingCoach.id ? res.coach! : c))
+        );
+        setEditingCoach(null);
+        setStatusMessage({
+          type: "success",
+          text: "تم تحديث بيانات المدرب بنجاح!",
+        });
+        setTimeout(() => setStatusMessage(null), 3500);
+      } else {
+        setStatusMessage({
+          type: "error",
+          text: res.error || "تعذر حفظ التعديلات",
+        });
+      }
+    });
+  };
+
+  const handleDeleteCoach = (coachId: string, coachName: string) => {
+    if (confirm(`هل أنت متأكد من رغبتك في حذف المدرب (${coachName}) نهائياً من المنظومة؟`)) {
+      startTransition(async () => {
+        const res = await deleteCoachAction(coachId);
+        if (res.success) {
+          setCoaches((prev) => prev.filter((c) => c.id !== coachId));
+          setStatusMessage({
+            type: "success",
+            text: `تم حذف المدرب (${coachName}) بنجاح!`,
+          });
+          setTimeout(() => setStatusMessage(null), 3500);
+        } else {
+          setStatusMessage({
+            type: "error",
+            text: res.error || "تعذر حذف المدرب",
+          });
+        }
+      });
+    }
   };
 
   const handleAddCoach = (e: React.FormEvent) => {
@@ -813,36 +893,61 @@ export function CoachesManagerView({
                     </div>
 
                     {/* Operational Actions */}
-                    {isApproved ? (
-                      <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5">
+                      {isApproved && (
                         <Link
                           href="/admin/sessions"
-                          className="h-8 px-3 rounded-lg bg-amber-500/15 hover:bg-amber-500 text-amber-400 hover:text-slate-950 border border-amber-500/30 font-bold text-[11px] flex items-center gap-1 transition-all"
+                          className="h-8 px-2.5 rounded-lg bg-amber-500/15 hover:bg-amber-500 text-amber-400 hover:text-slate-950 border border-amber-500/30 font-bold text-[11px] flex items-center gap-1 transition-all"
                         >
                           <Calendar className="h-3 w-3" />
-                          <span>جدول الحصص</span>
+                          <span className="hidden sm:inline">الحصص</span>
                         </Link>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          disabled={isPending}
-                          onClick={() => handleReject(coach.id)}
-                          className="h-8 px-2.5 rounded-lg bg-rose-500/15 hover:bg-rose-500 text-rose-300 hover:text-white border border-rose-500/30 font-bold text-[11px] transition-all cursor-pointer"
-                        >
-                          رفض
-                        </button>
-                        <Button
-                          type="button"
-                          disabled={isPending}
-                          onClick={() => handleApprove(coach.id)}
-                          className="h-8 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[11px] shadow-sm cursor-pointer"
-                        >
-                          اعتماد الآن
-                        </Button>
-                      </div>
-                    )}
+                      )}
+
+                      {/* Edit Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleStartEdit(coach)}
+                        className="h-8 px-2.5 rounded-lg bg-blue-500/15 hover:bg-blue-500 text-blue-300 hover:text-white border border-blue-500/30 font-bold text-[11px] flex items-center gap-1 transition-all cursor-pointer"
+                        title="تعديل بيانات المدرب"
+                      >
+                        <Edit2 className="h-3 w-3" />
+                        <span>تعديل</span>
+                      </button>
+
+                      {/* Delete Button */}
+                      <button
+                        type="button"
+                        disabled={isPending}
+                        onClick={() => handleDeleteCoach(coach.id, coach.full_name)}
+                        className="h-8 px-2 rounded-lg bg-rose-500/15 hover:bg-rose-500 text-rose-300 hover:text-white border border-rose-500/30 font-bold text-[11px] flex items-center gap-1 transition-all cursor-pointer"
+                        title="حذف حساب المدرب نهائياً"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">حذف</span>
+                      </button>
+
+                      {!isApproved && (
+                        <>
+                          <button
+                            type="button"
+                            disabled={isPending}
+                            onClick={() => handleReject(coach.id)}
+                            className="h-8 px-2.5 rounded-lg bg-rose-500/15 hover:bg-rose-500 text-rose-300 hover:text-white border border-rose-500/30 font-bold text-[11px] transition-all cursor-pointer"
+                          >
+                            رفض
+                          </button>
+                          <Button
+                            type="button"
+                            disabled={isPending}
+                            onClick={() => handleApprove(coach.id)}
+                            className="h-8 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[11px] shadow-sm cursor-pointer"
+                          >
+                            اعتماد
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -1025,6 +1130,120 @@ export function CoachesManagerView({
                   className="bg-[#F59E0B] hover:bg-[#FBBF24] text-slate-950 font-black text-xs px-6 py-2.5 rounded-xl shadow-md cursor-pointer"
                 >
                   حفظ وتفعيل حساب المدرب
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Coach Modal */}
+      {editingCoach && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="relative w-full max-w-lg rounded-3xl bg-[#0D1117] border border-blue-500/40 p-6 text-start space-y-4 shadow-2xl text-white max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Edit2 className="h-5 w-5 text-blue-400" />
+                <h3 className="text-base font-black">
+                  تعديل بيانات المدرب: {editingCoach.full_name}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingCoach(null)}
+                className="text-slate-400 hover:text-white p-1"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-3.5 text-xs">
+              <div className="space-y-1">
+                <label className="text-slate-300 font-bold block">اسم المدرب بالكامل</label>
+                <Input
+                  required
+                  value={editFullName}
+                  onChange={(e) => setEditFullName(e.target.value)}
+                  className="bg-[#141b24] border-slate-700 text-white focus:border-blue-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-slate-300 font-bold block">البريد الإلكتروني</label>
+                  <Input
+                    required
+                    type="email"
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    className="bg-[#141b24] border-slate-700 text-white focus:border-blue-500"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-slate-300 font-bold block">رقم الهاتف (واتساب)</label>
+                  <Input
+                    required
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    className="bg-[#141b24] border-slate-700 text-white focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-slate-300 font-bold block">كلمة المرور للدخول</label>
+                  <Input
+                    required
+                    value={editPassword}
+                    onChange={(e) => setEditPassword(e.target.value)}
+                    className="bg-[#141b24] border-slate-700 text-white focus:border-blue-500"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-slate-300 font-bold block">التخصص التدريبي</label>
+                  <Input
+                    required
+                    value={editSpecialization}
+                    onChange={(e) => setEditSpecialization(e.target.value)}
+                    className="bg-[#141b24] border-slate-700 text-white focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-slate-300 font-bold block">سنوات الخبرة والرخصة</label>
+                <Input
+                  value={editExperience}
+                  onChange={(e) => setEditExperience(e.target.value)}
+                  className="bg-[#141b24] border-slate-700 text-white focus:border-blue-500"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-slate-300 font-bold block">نبذة والسيرة الذاتية</label>
+                <textarea
+                  rows={2}
+                  value={editBio}
+                  onChange={(e) => setEditBio(e.target.value)}
+                  className="w-full rounded-lg bg-[#141b24] border border-slate-700 text-white p-2.5 focus:outline-none focus:border-blue-500 text-start"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingCoach(null)}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white"
+                >
+                  إلغاء
+                </button>
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs px-6 py-2.5 rounded-xl shadow-md cursor-pointer"
+                >
+                  حفظ التعديلات
                 </Button>
               </div>
             </form>

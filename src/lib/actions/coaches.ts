@@ -86,6 +86,35 @@ export async function saveStoredCoaches(coaches: CoachProfile[]): Promise<void> 
   });
 }
 
+const COACHES_DELETED_COOKIE = "academy_coaches_deleted";
+
+export async function getDeletedCoachIds(): Promise<string[]> {
+  const cookieStore = await cookies();
+  const raw = cookieStore.get(COACHES_DELETED_COOKIE)?.value;
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(decodeURIComponent(raw));
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+}
+
+export async function saveDeletedCoachIds(ids: string[]): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.set(COACHES_DELETED_COOKIE, encodeURIComponent(JSON.stringify(ids)), {
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 60,
+  });
+}
+
 /**
  * Get all coaches combined (initial + custom stored)
  */
@@ -112,8 +141,13 @@ export async function getCoaches(): Promise<CoachProfile[]> {
       });
 
       const stored = await getStoredCoaches();
+      const deletedIds = await getDeletedCoachIds();
       const map = new Map<string, CoachProfile>();
-      [...INITIAL_COACHES, ...dbCoaches, ...stored].forEach((c) => map.set(c.id, c));
+      [...INITIAL_COACHES, ...dbCoaches, ...stored].forEach((c) => {
+        if (!deletedIds.includes(c.id)) {
+          map.set(c.id, c);
+        }
+      });
       return Array.from(map.values());
     }
   } catch {
@@ -166,8 +200,13 @@ export async function getCoaches(): Promise<CoachProfile[]> {
     created_at: c.created_at || new Date().toISOString(),
   }));
   const stored = await getStoredCoaches();
+  const deletedIds = await getDeletedCoachIds();
   const map = new Map<string, CoachProfile>();
-  [...INITIAL_COACHES, ...fbCoaches, ...stored].forEach((c) => map.set(c.id, c));
+  [...INITIAL_COACHES, ...fbCoaches, ...stored].forEach((c) => {
+    if (!deletedIds.includes(c.id)) {
+      map.set(c.id, c);
+    }
+  });
   return Array.from(map.values());
 }
 
@@ -411,6 +450,15 @@ export async function saveCoachAction(
       await saveStoredCoaches(stored);
       revalidatePath("/admin/coaches");
       return { success: true, coach: stored[index] };
+    } else {
+      const all = await getCoaches();
+      const target = all.find((c) => c.id === coachData.id);
+      if (target) {
+        const updated = { ...target, ...coachData };
+        await saveStoredCoaches([updated, ...stored]);
+        revalidatePath("/admin/coaches");
+        return { success: true, coach: updated };
+      }
     }
   }
 
@@ -432,4 +480,50 @@ export async function saveCoachAction(
   revalidatePath("/admin");
 
   return { success: true, coach: newCoach };
+}
+
+/**
+ * Delete a coach completely (Admin action)
+ */
+export async function deleteCoachAction(
+  coachId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // 1. Remove from stored coaches
+    const stored = await getStoredCoaches();
+    const filteredStored = stored.filter((c) => c.id !== coachId);
+    await saveStoredCoaches(filteredStored);
+
+    // 2. Add to deleted IDs blacklist
+    const deletedIds = await getDeletedCoachIds();
+    if (!deletedIds.includes(coachId)) {
+      await saveDeletedCoachIds([...deletedIds, coachId]);
+    }
+
+    // 3. Supabase Auth fallback
+    try {
+      const adminClient = createAdminClient();
+      if (adminClient) {
+        await adminClient.auth.admin.deleteUser(coachId);
+      }
+    } catch (err) {
+      console.warn("Supabase deleteUser fallback:", err);
+    }
+
+    // 4. Notification to Admin
+    await addNotification({
+      title: "تم حذف مدرب من الجهاز الفني 🗑️",
+      description: `قام مدير الأكاديمية بحذف حساب الكابتن بنجاح من قاعدة البيانات.`,
+      type: "registration",
+      href: "/admin/coaches",
+      targetRole: "admin",
+    });
+
+    revalidatePath("/admin/coaches");
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (err) {
+    console.error("Failed to delete coach:", err);
+    return { success: false, error: "حدث خطأ أثناء حذف المدرب" };
+  }
 }
