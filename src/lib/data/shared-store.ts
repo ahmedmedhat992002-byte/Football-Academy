@@ -153,6 +153,33 @@ export function saveSharedRegisteredUser(user: SharedRegisteredUser): void {
   });
 }
 
+export function deleteSharedRegisteredUser(identifier: string): void {
+  const norm = identifier.trim().toLowerCase();
+  persistSharedStore((store) => {
+    store.registeredUsers = store.registeredUsers.filter(
+      (u) => u.id !== identifier && u.email?.toLowerCase() !== norm
+    );
+  });
+}
+
+export function updateSharedRegisteredUser(
+  identifier: string,
+  updated: Partial<SharedRegisteredUser>
+): void {
+  const norm = identifier.trim().toLowerCase();
+  persistSharedStore((store) => {
+    const idx = store.registeredUsers.findIndex(
+      (u) => u.id === identifier || u.email?.toLowerCase() === norm
+    );
+    if (idx >= 0) {
+      store.registeredUsers[idx] = {
+        ...store.registeredUsers[idx],
+        ...updated,
+      };
+    }
+  });
+}
+
 // --- Payments Helpers ---
 export function getSharedPayments(): PaymentRecord[] {
   return getSharedStore().payments;

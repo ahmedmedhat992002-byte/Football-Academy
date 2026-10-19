@@ -308,10 +308,18 @@ export function CoachesManagerView({
         setCoaches((prev) =>
           prev.map((c) => (c.id === editingCoach.id ? res.coach! : c))
         );
+        // Cascade update assigned groups locally
+        setGroups((prev) =>
+          prev.map((g) =>
+            g.coach_id === editingCoach.id
+              ? { ...g, coach_name: res.coach!.full_name }
+              : g
+          )
+        );
         setEditingCoach(null);
         setStatusMessage({
           type: "success",
-          text: "تم تحديث بيانات المدرب بنجاح!",
+          text: "تم تحديث بيانات المدرب بنجاح وتحديث كافة ارتباطاته في المنظومة!",
         });
         setTimeout(() => setStatusMessage(null), 3500);
       } else {
@@ -324,14 +332,22 @@ export function CoachesManagerView({
   };
 
   const handleDeleteCoach = (coachId: string, coachName: string) => {
-    if (confirm(`هل أنت متأكد من رغبتك في حذف المدرب (${coachName}) نهائياً من المنظومة؟`)) {
+    if (confirm(`هل أنت متأكد من رغبتك في حذف المدرب (${coachName}) نهائياً وتطهير بريده وفك ارتباطه بكافة المجموعات والحصص؟`)) {
       startTransition(async () => {
         const res = await deleteCoachAction(coachId);
         if (res.success) {
           setCoaches((prev) => prev.filter((c) => c.id !== coachId));
+          // Cascade disassociate groups locally
+          setGroups((prev) =>
+            prev.map((g) =>
+              g.coach_id === coachId || g.coach_name === coachName
+                ? { ...g, coach_id: null, coach_name: "غير محدد" }
+                : g
+            )
+          );
           setStatusMessage({
             type: "success",
-            text: `تم حذف المدرب (${coachName}) بنجاح!`,
+            text: `تم حذف المدرب (${coachName}) وتطهير بريده وفك كافة ارتباطاته بنجاح!`,
           });
           setTimeout(() => setStatusMessage(null), 3500);
         } else {

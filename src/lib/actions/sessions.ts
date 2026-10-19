@@ -383,3 +383,82 @@ export async function deleteSession(
 
   return { success: true };
 }
+
+/**
+ * Disassociate coach from all sessions (on delete)
+ */
+export async function unassignCoachFromAllSessions(
+  coachId: string,
+  coachName?: string
+): Promise<void> {
+  try {
+    const supabase = await createClient();
+    await (supabase.from("sessions") as any)
+      .update({ coach_id: null, updated_at: new Date().toISOString() })
+      .eq("coach_id", coachId);
+  } catch {
+    // Ignore fallback
+  }
+
+  const customSessions = await getStoredCustomSessions();
+  let changed = false;
+  const updated = customSessions.map((s) => {
+    const isTarget =
+      s.coach_id === coachId ||
+      (coachName && s.coach_name?.trim() === coachName.trim()) ||
+      (s.coach_id && coachId && (s.coach_id.includes(coachId) || coachId.includes(s.coach_id)));
+
+    if (isTarget) {
+      changed = true;
+      return {
+        ...s,
+        coach_id: null,
+        coach_name: "غير محدد",
+        updated_at: new Date().toISOString(),
+      };
+    }
+    return s;
+  });
+
+  if (changed) {
+    await saveCustomSessions(updated);
+  }
+  revalidatePath("/admin/sessions");
+  revalidatePath("/coach/sessions");
+}
+
+/**
+ * Propagate coach name updates across all sessions (on edit)
+ */
+export async function updateCoachNameInAllSessions(
+  coachId: string,
+  newCoachName: string,
+  oldCoachName?: string
+): Promise<void> {
+  const customSessions = await getStoredCustomSessions();
+  let changed = false;
+  const updated = customSessions.map((s) => {
+    const isTarget =
+      s.coach_id === coachId ||
+      (oldCoachName && s.coach_name?.trim() === oldCoachName.trim()) ||
+      (s.coach_id && coachId && (s.coach_id.includes(coachId) || coachId.includes(s.coach_id)));
+
+    if (isTarget) {
+      changed = true;
+      return {
+        ...s,
+        coach_id: coachId,
+        coach_name: newCoachName,
+        updated_at: new Date().toISOString(),
+      };
+    }
+    return s;
+  });
+
+  if (changed) {
+    await saveCustomSessions(updated);
+  }
+  revalidatePath("/admin/sessions");
+  revalidatePath("/coach/sessions");
+}
+

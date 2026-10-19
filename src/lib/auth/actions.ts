@@ -37,6 +37,8 @@ export interface AuthActionResult {
 import {
   getSharedRegisteredUsers,
   saveSharedRegisteredUser,
+  deleteSharedRegisteredUser,
+  updateSharedRegisteredUser,
 } from "@/lib/data/shared-store";
 
 const REGISTERED_USERS_COOKIE = "academy_registered_users";
@@ -86,6 +88,154 @@ async function saveRegisteredUsers(users: RegisteredUserRecord[]): Promise<void>
 }
 
 /**
+ * Purge a user from registered users (cookies and shared store) and clear session if active
+ */
+export async function purgeRegisteredUser(identifier: string, email?: string): Promise<void> {
+  const normId = identifier ? identifier.trim() : "";
+  const normEmail = (email || identifier).trim().toLowerCase();
+
+  deleteSharedRegisteredUser(normId);
+  if (normEmail && normEmail !== normId) {
+    deleteSharedRegisteredUser(normEmail);
+  }
+
+  const cookieStore = await cookies();
+  const raw = cookieStore.get(REGISTERED_USERS_COOKIE)?.value;
+  let fromCookies: RegisteredUserRecord[] = [];
+  if (raw) {
+    try {
+      fromCookies = JSON.parse(decodeURIComponent(raw));
+    } catch {
+      try {
+        fromCookies = JSON.parse(raw);
+      } catch {
+        fromCookies = [];
+      }
+    }
+  }
+
+  const filtered = fromCookies.filter((u) => {
+    if (normId && u.id === normId) return false;
+    if (normEmail && u.email?.toLowerCase() === normEmail) return false;
+    return true;
+  });
+
+  cookieStore.set(REGISTERED_USERS_COOKIE, encodeURIComponent(JSON.stringify(filtered)), {
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 60,
+  });
+
+  // Clear demo session if this user was currently logged in
+  const demoCookie = cookieStore.get("academy_demo_user");
+  if (demoCookie?.value) {
+    try {
+      let parsed: any;
+      try {
+        parsed = JSON.parse(decodeURIComponent(demoCookie.value));
+      } catch {
+        parsed = JSON.parse(demoCookie.value);
+      }
+      if (
+        (normId && parsed?.id === normId) ||
+        (normEmail && parsed?.email?.toLowerCase() === normEmail)
+      ) {
+        cookieStore.delete("academy_demo_user");
+      }
+    } catch {
+      // Ignore
+    }
+  }
+}
+
+/**
+ * Update user details across registered users and live session
+ */
+export async function updateRegisteredUserRecord(
+  identifier: string,
+  updated: { email?: string; fullName?: string; phone?: string; password?: string }
+): Promise<void> {
+  const normId = identifier.trim();
+  const normEmail = (updated.email || "").trim().toLowerCase();
+
+  updateSharedRegisteredUser(normId, {
+    ...(updated.email ? { email: updated.email.toLowerCase() } : {}),
+    ...(updated.fullName ? { fullName: updated.fullName } : {}),
+    ...(updated.phone ? { phone: updated.phone } : {}),
+    ...(updated.password ? { passwordHash: updated.password } : {}),
+  });
+
+  const cookieStore = await cookies();
+  const raw = cookieStore.get(REGISTERED_USERS_COOKIE)?.value;
+  let fromCookies: RegisteredUserRecord[] = [];
+  if (raw) {
+    try {
+      fromCookies = JSON.parse(decodeURIComponent(raw));
+    } catch {
+      try {
+        fromCookies = JSON.parse(raw);
+      } catch {
+        fromCookies = [];
+      }
+    }
+  }
+
+  let matched = false;
+  fromCookies = fromCookies.map((u) => {
+    if (u.id === normId || (normEmail && u.email?.toLowerCase() === normEmail)) {
+      matched = true;
+      return {
+        ...u,
+        ...(updated.email ? { email: updated.email.toLowerCase() } : {}),
+        ...(updated.fullName ? { fullName: updated.fullName } : {}),
+        ...(updated.phone ? { phone: updated.phone } : {}),
+        ...(updated.password ? { passwordHash: updated.password } : {}),
+      };
+    }
+    return u;
+  });
+
+  if (matched) {
+    cookieStore.set(REGISTERED_USERS_COOKIE, encodeURIComponent(JSON.stringify(fromCookies)), {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 60,
+    });
+  }
+
+  // Update active session if currently logged in
+  const demoCookie = cookieStore.get("academy_demo_user");
+  if (demoCookie?.value) {
+    try {
+      let parsed: any;
+      try {
+        parsed = JSON.parse(decodeURIComponent(demoCookie.value));
+      } catch {
+        parsed = JSON.parse(demoCookie.value);
+      }
+      if (parsed && (parsed.id === normId || parsed.email?.toLowerCase() === normEmail)) {
+        const newSession = {
+          ...parsed,
+          ...(updated.email ? { email: updated.email.toLowerCase() } : {}),
+          ...(updated.fullName ? { fullName: updated.fullName } : {}),
+          ...(updated.phone ? { phone: updated.phone } : {}),
+        };
+        cookieStore.set("academy_demo_user", JSON.stringify(newSession), {
+          path: "/",
+          httpOnly: true,
+          sameSite: "lax",
+          maxAge: 60 * 60 * 24 * 7,
+        });
+      }
+    } catch {
+      // Ignore
+    }
+  }
+}
+
+/**
  * Standard login supporting Admin, coaches, and multiple registered parents
  */
 export async function loginAction(data: LoginInput): Promise<AuthActionResult> {
@@ -98,6 +248,29 @@ export async function loginAction(data: LoginInput): Promise<AuthActionResult> {
   }
 
   const { email, password } = parsed.data;
+  const lowerEmail = email.trim().toLowerCase();
+
+  // Strict check: if email is blacklisted/deleted coach, reject immediately
+  const cookieStore = await cookies();
+  const deletedEmailsRaw = cookieStore.get("academy_coaches_deleted_emails")?.value;
+  if (deletedEmailsRaw) {
+    try {
+      let deletedList: string[] = [];
+      try {
+        deletedList = JSON.parse(decodeURIComponent(deletedEmailsRaw));
+      } catch {
+        deletedList = JSON.parse(deletedEmailsRaw);
+      }
+      if (Array.isArray(deletedList) && deletedList.map((e) => e.toLowerCase()).includes(lowerEmail)) {
+        return {
+          success: false,
+          error: "تم حذف وإلغاء حساب هذا المدرب نهائياً من قاعدة بيانات الأكاديمية ولا يمكن تسجيل الدخول به.",
+        };
+      }
+    } catch {
+      // Ignore
+    }
+  }
 
   // 1. Try Supabase Auth first with real password and email confirmation check
   try {

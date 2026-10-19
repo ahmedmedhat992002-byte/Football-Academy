@@ -249,3 +249,93 @@ export async function assignCoachToGroup(
   revalidatePath("/admin/groups");
   return { success: true };
 }
+
+/**
+ * Disassociate coach from all assigned groups (on delete)
+ */
+export async function unassignCoachFromAllGroups(
+  coachId: string,
+  coachName?: string
+): Promise<void> {
+  try {
+    const supabase = await createClient();
+    await (supabase.from("groups") as any)
+      .update({ coach_id: null, updated_at: new Date().toISOString() })
+      .eq("coach_id", coachId);
+  } catch {
+    // Ignore supabase fallback
+  }
+
+  const customGroups = await getStoredCustomGroups();
+  const allGroups = [...customGroups, ...INITIAL_GROUPS];
+  const groupMap = new Map<string, Group>();
+
+  for (const g of allGroups) {
+    const isTarget =
+      g.coach_id === coachId ||
+      (coachName && g.coach_name?.trim() === coachName.trim()) ||
+      (g.coach_id && coachId && (g.coach_id.includes(coachId) || coachId.includes(g.coach_id)));
+
+    if (isTarget) {
+      groupMap.set(g.id, {
+        ...g,
+        coach_id: null,
+        coach_name: "غير محدد",
+        updated_at: new Date().toISOString(),
+      });
+    } else if (!groupMap.has(g.id)) {
+      // Preserve customized groups
+      const isCustom = customGroups.some((cg) => cg.id === g.id);
+      if (isCustom) {
+        groupMap.set(g.id, g);
+      }
+    }
+  }
+
+  await saveCustomGroups(Array.from(groupMap.values()));
+  invalidateCache("groups");
+  revalidatePath("/admin/groups");
+  revalidatePath("/coach/groups");
+  revalidatePath("/admin/coaches");
+}
+
+/**
+ * Propagate coach name updates across all groups (on edit)
+ */
+export async function updateCoachNameInAllGroups(
+  coachId: string,
+  newCoachName: string,
+  oldCoachName?: string
+): Promise<void> {
+  const customGroups = await getStoredCustomGroups();
+  const allGroups = [...customGroups, ...INITIAL_GROUPS];
+  const groupMap = new Map<string, Group>();
+
+  for (const g of allGroups) {
+    const isTarget =
+      g.coach_id === coachId ||
+      (oldCoachName && g.coach_name?.trim() === oldCoachName.trim()) ||
+      (g.coach_id && coachId && (g.coach_id.includes(coachId) || coachId.includes(g.coach_id)));
+
+    if (isTarget) {
+      groupMap.set(g.id, {
+        ...g,
+        coach_id: coachId,
+        coach_name: newCoachName,
+        updated_at: new Date().toISOString(),
+      });
+    } else if (!groupMap.has(g.id)) {
+      const isCustom = customGroups.some((cg) => cg.id === g.id);
+      if (isCustom) {
+        groupMap.set(g.id, g);
+      }
+    }
+  }
+
+  await saveCustomGroups(Array.from(groupMap.values()));
+  invalidateCache("groups");
+  revalidatePath("/admin/groups");
+  revalidatePath("/coach/groups");
+  revalidatePath("/admin/coaches");
+}
+

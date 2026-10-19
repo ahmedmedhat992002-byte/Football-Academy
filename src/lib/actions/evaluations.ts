@@ -281,3 +281,39 @@ export async function deleteEvaluation(
   revalidatePath("/parent/report");
   return { success: true };
 }
+
+/**
+ * Disassociate coach from all evaluations (on delete)
+ */
+export async function unassignCoachFromAllEvaluations(coachId: string): Promise<void> {
+  try {
+    const supabase = await createClient();
+    await (supabase.from("evaluations") as any)
+      .update({ coach_id: null })
+      .eq("coach_id", coachId);
+  } catch {
+    // Ignore fallback
+  }
+
+  const custom = await getStoredEvaluations();
+  let changed = false;
+  const updated = custom.map((e) => {
+    if (e.coach_id === coachId || (e.coach_id && coachId && (e.coach_id.includes(coachId) || coachId.includes(e.coach_id)))) {
+      changed = true;
+      return {
+        ...e,
+        coach_id: null,
+      };
+    }
+    return e;
+  });
+
+  if (changed) {
+    await saveStoredEvaluations(updated);
+  }
+
+  revalidatePath("/admin/evaluations");
+  revalidatePath("/coach/evaluations");
+  revalidatePath("/parent/report");
+}
+
