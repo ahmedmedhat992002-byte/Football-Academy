@@ -8,6 +8,7 @@ import type {
   PlayerInjury,
   PlayerBadge,
   Testimonial,
+  CoachProfile,
 } from "@/lib/data/academy-store";
 
 export interface SharedRegisteredUser {
@@ -32,6 +33,7 @@ export interface AcademySharedData {
   injuries: PlayerInjury[];
   badges: PlayerBadge[];
   testimonials: Testimonial[];
+  coaches: CoachProfile[];
 }
 
 declare global {
@@ -65,6 +67,7 @@ function loadFromFile(): AcademySharedData {
         injuries: Array.isArray(parsed.injuries) ? parsed.injuries : [],
         badges: Array.isArray(parsed.badges) ? parsed.badges : [],
         testimonials: Array.isArray(parsed.testimonials) ? parsed.testimonials : [],
+        coaches: Array.isArray(parsed.coaches) ? parsed.coaches : [],
       };
     }
   } catch (err) {
@@ -79,6 +82,7 @@ function loadFromFile(): AcademySharedData {
     injuries: [],
     badges: [],
     testimonials: [],
+    coaches: [],
   };
 }
 
@@ -290,4 +294,36 @@ export function deleteSharedTestimonial(id: string): void {
     }
   });
 }
+
+// --- Coaches Helpers ---
+export function getSharedCoaches(): CoachProfile[] {
+  return getSharedStore().coaches || [];
+}
+
+export function saveSharedCoach(coach: CoachProfile): void {
+  persistSharedStore((store) => {
+    if (!Array.isArray(store.coaches)) store.coaches = [];
+    const idx = store.coaches.findIndex((c) => c.id === coach.id);
+    if (idx >= 0) {
+      store.coaches[idx] = coach;
+    } else {
+      store.coaches.unshift(coach);
+    }
+  });
+}
+
+export function saveAllSharedCoaches(coaches: CoachProfile[]): void {
+  persistSharedStore((store) => {
+    store.coaches = coaches;
+  });
+}
+
+export function deleteSharedCoach(id: string): void {
+  persistSharedStore((store) => {
+    if (Array.isArray(store.coaches)) {
+      store.coaches = store.coaches.filter((c) => c.id !== id);
+    }
+  });
+}
+
 

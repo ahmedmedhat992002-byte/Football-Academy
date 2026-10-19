@@ -16,6 +16,8 @@ import {
 import {
   deleteSharedRegisteredUser,
   updateSharedRegisteredUser,
+  getSharedCoaches,
+  saveAllSharedCoaches,
 } from "@/lib/data/shared-store";
 import {
   unassignCoachFromAllGroups,
@@ -28,22 +30,9 @@ import {
 import {
   unassignCoachFromAllEvaluations,
 } from "@/lib/actions/evaluations";
+import type { CoachStatus, CoachProfile } from "@/lib/data/academy-store";
 
-export type CoachStatus = "approved" | "pending_approval" | "rejected";
-
-export interface CoachProfile {
-  id: string;
-  full_name: string;
-  email: string;
-  phone: string;
-  password?: string;
-  specialization: string;
-  status: CoachStatus;
-  experience_years?: string;
-  bio?: string;
-  assigned_groups?: string[];
-  created_at: string;
-}
+export type { CoachStatus, CoachProfile };
 
 const COACHES_STORAGE_COOKIE = "academy_coaches_storage";
 
@@ -60,6 +49,21 @@ const INITIAL_COACHES: CoachProfile[] = [
     bio: "خبرة واسعة في التأسيس المهاري والبدني للفئات السنية المبكرة وصقل مهارات المراوغة والتمرير.",
     assigned_groups: ["فريق النجوم (U10)", "فريق الأبطال (U12)"],
     created_at: "2026-01-01T00:00:00Z",
+    show_on_landing: true,
+  },
+  {
+    id: "coach-ahmed-003",
+    full_name: "كابتن أحمد مدحت",
+    email: "ahmed.medhat@academy.com",
+    phone: "01000419832",
+    password: "coach123",
+    specialization: "مدرب اللياقة والتأهيل البدني والحركي",
+    status: "approved",
+    experience_years: "6 سنوات",
+    bio: "أخصائي الإعداد البدني والتوافق العضلي للفئات السنية، حاصل على دبلومة اللياقة التخصصية من برشلونة.",
+    assigned_groups: ["لياقة وإعداد بدني عام"],
+    created_at: "2026-01-15T00:00:00Z",
+    show_on_landing: true,
   },
   {
     id: "coach-gk-002",
@@ -73,25 +77,36 @@ const INITIAL_COACHES: CoachProfile[] = [
     bio: "تطوير ردود الأفعال، التمركز الصحيح والتصدي للكرات العرضية لحراس كافة الفئات السنية.",
     assigned_groups: ["تدريبات الحراس التخصصية"],
     created_at: "2026-02-15T00:00:00Z",
+    show_on_landing: true,
   },
 ];
 
 export async function getStoredCoaches(): Promise<CoachProfile[]> {
+  const shared = getSharedCoaches();
   const cookieStore = await cookies();
   const raw = cookieStore.get(COACHES_STORAGE_COOKIE)?.value;
-  if (!raw) return [];
-  try {
-    return JSON.parse(decodeURIComponent(raw));
-  } catch {
+  let fromCookies: CoachProfile[] = [];
+  if (raw) {
     try {
-      return JSON.parse(raw);
+      fromCookies = JSON.parse(decodeURIComponent(raw));
     } catch {
-      return [];
+      try {
+        fromCookies = JSON.parse(raw);
+      } catch {
+        fromCookies = [];
+      }
     }
   }
+
+  const map = new Map<string, CoachProfile>();
+  [...(Array.isArray(shared) ? shared : []), ...(Array.isArray(fromCookies) ? fromCookies : [])].forEach((c) => {
+    if (c?.id) map.set(c.id, c);
+  });
+  return Array.from(map.values());
 }
 
 export async function saveStoredCoaches(coaches: CoachProfile[]): Promise<void> {
+  saveAllSharedCoaches(coaches);
   const cookieStore = await cookies();
   cookieStore.set(COACHES_STORAGE_COOKIE, encodeURIComponent(JSON.stringify(coaches)), {
     path: "/",
@@ -688,6 +703,10 @@ export async function saveCoachAction(
           experience_years: coachData.experience_years || existing?.experience_years || "3 سنوات",
           bio: coachData.bio || existing?.bio || "مدرب معتمد بالجهاز الفني للأكاديمية",
           status: coachData.status || existing?.status || "approved",
+          show_on_landing:
+            coachData.show_on_landing !== undefined
+              ? coachData.show_on_landing
+              : (existing?.show_on_landing ?? true),
           created_at: existing?.created_at || new Date().toISOString(),
         };
         await saveStoredCoaches([updatedCoach, ...stored]);
@@ -748,6 +767,7 @@ export async function saveCoachAction(
       revalidatePath("/coach");
       revalidatePath("/coach/groups");
       revalidatePath("/coach/sessions");
+      revalidatePath("/");
 
       return { success: true, coach: updatedCoach };
     }
@@ -763,6 +783,8 @@ export async function saveCoachAction(
       experience_years: coachData.experience_years || "3 سنوات",
       bio: coachData.bio || "مدرب معتمد بالجهاز الفني للأكاديمية",
       status: coachData.status || "approved",
+      show_on_landing:
+        coachData.show_on_landing !== undefined ? coachData.show_on_landing : true,
       created_at: new Date().toISOString(),
     };
 
@@ -787,6 +809,7 @@ export async function saveCoachAction(
     revalidatePath("/admin/sessions");
     revalidatePath("/admin");
     revalidatePath("/coach");
+    revalidatePath("/");
 
     return { success: true, coach: newCoach };
   } catch (err) {
@@ -870,10 +893,49 @@ export async function deleteCoachAction(
     revalidatePath("/coach/sessions");
     revalidatePath("/coach/evaluations");
     revalidatePath("/parent");
+    revalidatePath("/");
 
     return { success: true };
   } catch (err) {
     console.error("Failed to delete coach:", err);
     return { success: false, error: "حدث خطأ أثناء حذف المدرب" };
+  }
+}
+
+/**
+ * Toggle whether a coach is featured on the public landing page (#coaches section)
+ */
+export async function toggleCoachShowOnLandingAction(
+  coachId: string,
+  showOnLanding: boolean
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const coaches = await getStoredCoaches();
+    const targetIndex = coaches.findIndex((c) => c.id === coachId);
+
+    if (targetIndex >= 0) {
+      coaches[targetIndex] = {
+        ...coaches[targetIndex],
+        show_on_landing: showOnLanding,
+      };
+      await saveStoredCoaches(coaches);
+    } else {
+      const allCoaches = await getCoaches();
+      const existing = allCoaches.find((c) => c.id === coachId);
+      if (existing) {
+        const updated: CoachProfile = {
+          ...existing,
+          show_on_landing: showOnLanding,
+        };
+        await saveStoredCoaches([updated, ...coaches]);
+      }
+    }
+
+    revalidatePath("/");
+    revalidatePath("/admin/coaches");
+    return { success: true };
+  } catch (err) {
+    console.error("Failed to toggle coach show on landing:", err);
+    return { success: false, error: "تعذر تحديث حالة الظهور في الواجهة" };
   }
 }

@@ -9,6 +9,7 @@ import {
   rejectCoachAction,
   saveCoachAction,
   deleteCoachAction,
+  toggleCoachShowOnLandingAction,
 } from "@/lib/actions/coaches";
 import { assignCoachToGroup } from "@/lib/actions/groups";
 import type { Player, Group, Session, Evaluation } from "@/lib/data/academy-store";
@@ -35,6 +36,7 @@ import {
   Layers,
   Edit2,
   Trash2,
+  Globe,
 } from "lucide-react";
 
 interface CoachesManagerViewProps {
@@ -176,6 +178,8 @@ export function CoachesManagerView({
   const [newPassword, setNewPassword] = useState("coach123");
   const [newSpecialization, setNewSpecialization] = useState("مدير فني للبراعم (U10 & U12)");
   const [newExperience, setNewExperience] = useState("5 سنوات — رخصة CAF B");
+  const [newBio, setNewBio] = useState("");
+  const [newShowOnLanding, setNewShowOnLanding] = useState(true);
 
   // Edit coach modal state
   const [editingCoach, setEditingCoach] = useState<CoachProfile | null>(null);
@@ -186,6 +190,7 @@ export function CoachesManagerView({
   const [editSpecialization, setEditSpecialization] = useState("");
   const [editExperience, setEditExperience] = useState("");
   const [editBio, setEditBio] = useState("");
+  const [editShowOnLanding, setEditShowOnLanding] = useState(true);
 
   const pendingCoaches = useMemo(
     () => coaches.filter((c) => c.status === "pending_approval"),
@@ -277,6 +282,26 @@ export function CoachesManagerView({
     });
   };
 
+  const handleToggleShowOnLanding = (coachId: string, newState: boolean) => {
+    setCoaches((prev) =>
+      prev.map((c) => (c.id === coachId ? { ...c, show_on_landing: newState } : c))
+    );
+    startTransition(async () => {
+      const res = await toggleCoachShowOnLandingAction(coachId, newState);
+      if (res.success) {
+        setStatusMessage({
+          type: "success",
+          text: newState
+            ? "تم تفعيل ظهور الكابتن في واجهة الموقع الرئيسية (Landing Page) بنجاح 🌐"
+            : "تم إخفاء الكابتن من واجهة الموقع الرئيسية بنجاح 👁️‍🗨️",
+        });
+        setTimeout(() => setStatusMessage(null), 3500);
+      } else {
+        setStatusMessage({ type: "error", text: res.error || "تعذر تعديل حالة الظهور" });
+      }
+    });
+  };
+
   const handleStartEdit = (coach: CoachProfile) => {
     setEditingCoach(coach);
     setEditFullName(coach.full_name);
@@ -286,6 +311,7 @@ export function CoachesManagerView({
     setEditSpecialization(coach.specialization || "مدير فني للبراعم");
     setEditExperience(coach.experience_years || "3 سنوات");
     setEditBio(coach.bio || "");
+    setEditShowOnLanding(coach.show_on_landing !== false);
   };
 
   const handleSaveEdit = (e: React.FormEvent) => {
@@ -302,6 +328,7 @@ export function CoachesManagerView({
         specialization: editSpecialization,
         experience_years: editExperience,
         bio: editBio,
+        show_on_landing: editShowOnLanding,
       });
 
       if (res.success && res.coach) {
@@ -372,6 +399,8 @@ export function CoachesManagerView({
         password: newPassword,
         specialization: newSpecialization,
         experience_years: newExperience,
+        bio: newBio,
+        show_on_landing: newShowOnLanding,
         status: "approved",
       });
 
@@ -381,6 +410,8 @@ export function CoachesManagerView({
         setNewFullName("");
         setNewEmail("");
         setNewPhone("");
+        setNewBio("");
+        setNewShowOnLanding(true);
         setStatusMessage({
           type: "success",
           text: `تم إضافة وتفعيل حساب الكابتن (${res.coach.full_name}) بنجاح!`,
@@ -741,16 +772,46 @@ export function CoachesManagerView({
                       </span>
                     </div>
 
-                    {/* Live Presence Indicator */}
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className={`h-2 w-2 rounded-full ${
-                          isApproved ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
+                    {/* Landing Page Visibility & Live Presence */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={isPending}
+                        onClick={() =>
+                          handleToggleShowOnLanding(
+                            coach.id,
+                            coach.show_on_landing === false ? true : false
+                          )
+                        }
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer border ${
+                          coach.show_on_landing !== false
+                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30"
+                            : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-200"
                         }`}
-                      />
-                      <span className="text-[10px] font-bold text-slate-300">
-                        {isApproved ? "معتمد نشط" : "قيد المراجعة"}
-                      </span>
+                        title={
+                          coach.show_on_landing !== false
+                            ? "معروض في واجهة الموقع للزوار (انقر للإخفاء)"
+                            : "مخفي من واجهة الموقع (انقر للإظهار)"
+                        }
+                      >
+                        <Globe className="h-3 w-3" />
+                        <span>
+                          {coach.show_on_landing !== false
+                            ? "معروض بالواجهة 🌐"
+                            : "مخفي من الواجهة"}
+                        </span>
+                      </button>
+
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`h-2 w-2 rounded-full ${
+                            isApproved ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
+                          }`}
+                        />
+                        <span className="text-[10px] font-bold text-slate-300">
+                          {isApproved ? "معتمد نشط" : "قيد المراجعة"}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
@@ -1132,6 +1193,30 @@ export function CoachesManagerView({
                 />
               </div>
 
+              <div className="space-y-1">
+                <label className="text-slate-300 font-bold block">نبذة الخبرة والسيرة الذاتية (تظهر في واجهة الموقع)</label>
+                <textarea
+                  rows={2}
+                  placeholder="خبرة في التأسيس المهاري والبدني للفئات السنية..."
+                  value={newBio}
+                  onChange={(e) => setNewBio(e.target.value)}
+                  className="w-full rounded-lg bg-[#141b24] border border-slate-700 text-white p-2.5 focus:outline-none focus:border-amber-500 text-start"
+                />
+              </div>
+
+              <label className="flex items-center gap-2.5 p-3 rounded-xl bg-[#141b24] border border-slate-700 cursor-pointer hover:border-amber-500/50 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={newShowOnLanding}
+                  onChange={(e) => setNewShowOnLanding(e.target.checked)}
+                  className="h-4 w-4 rounded accent-amber-500 cursor-pointer"
+                />
+                <div className="text-start">
+                  <span className="font-bold text-white block text-xs">عرض هذا الكابتن في الصفحة الرئيسية (Landing Page) 🌐</span>
+                  <span className="text-[10px] text-slate-400 block">سيظهر كارت المدرب في قسم الجهاز الفني للزوار وأولياء الأمور مع زر الواتساب</span>
+                </div>
+              </label>
+
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
                 <button
                   type="button"
@@ -1245,6 +1330,19 @@ export function CoachesManagerView({
                   className="w-full rounded-lg bg-[#141b24] border border-slate-700 text-white p-2.5 focus:outline-none focus:border-blue-500 text-start"
                 />
               </div>
+
+              <label className="flex items-center gap-2.5 p-3 rounded-xl bg-[#141b24] border border-slate-700 cursor-pointer hover:border-blue-500/50 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={editShowOnLanding}
+                  onChange={(e) => setEditShowOnLanding(e.target.checked)}
+                  className="h-4 w-4 rounded accent-blue-500 cursor-pointer"
+                />
+                <div className="text-start">
+                  <span className="font-bold text-white block text-xs">عرض هذا الكابتن في الصفحة الرئيسية (Landing Page) 🌐</span>
+                  <span className="text-[10px] text-slate-400 block">عند التفعيل، يظهر الكابتن فوراً في كروت الجهاز الفني بالصفحة الرئيسية</span>
+                </div>
+              </label>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
                 <button

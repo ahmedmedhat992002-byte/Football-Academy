@@ -200,25 +200,30 @@ export function LandingPageView({
             g.name?.includes(selectedAgeCategory)
         );
 
-  // Real or active coaches to display (fallback to certified staff if empty)
+  // Real or active coaches to display (filtered by approved status and show_on_landing !== false)
+  const realLandingCoaches = coaches.filter(
+    (c) => (c.status === "approved" || !c.status) && c.show_on_landing !== false
+  );
   const displayCoaches =
-    coaches.length > 0
-      ? coaches.filter((c) => c.status === "approved" || !c.status).slice(0, 4)
+    realLandingCoaches.length > 0
+      ? realLandingCoaches
+      : coaches.filter((c) => c.status === "approved" || !c.status).length > 0
+      ? coaches.filter((c) => c.status === "approved" || !c.status)
       : [
           {
             id: "coach-1",
             full_name: "كابتن محمود السعدني",
             specialization: "المدير الفني للبراعم (U10 & U12) — رخصة CAF B",
-            experience_years: "8 سنوات",
+            experience_years: "7 سنوات",
             bio: "خبرة واسعة في التأسيس المهاري والبدني للفئات السنية المبكرة وصقل مهارات المراوغة والتمرير.",
             phone: "01098765432",
           },
           {
             id: "coach-2",
-            full_name: "كابتن حسام الدين خالد",
-            specialization: "المدير الفني والتنفيذي للأكاديمية",
-            experience_years: "10 سنوات",
-            bio: "إشراف عام وتخطيط فني وتأسيس مهاري وبدني لكافة فرق وبراعم الأكاديمية.",
+            full_name: "كابتن أحمد مدحت",
+            specialization: "مدرب اللياقة والتأهيل البدني والحركي",
+            experience_years: "6 سنوات",
+            bio: "أخصائي الإعداد البدني والتوافق العضلي للفئات السنية، حاصل على دبلومة اللياقة التخصصية من برشلونة.",
             phone: "01000419832",
           },
           {
@@ -1026,7 +1031,7 @@ export function LandingPageView({
           REAL COACHING STAFF SHOWCASE
          ========================================================================= */}
       <section id="coaches" className="py-16 md:py-24 bg-[#070e14]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           <div className="text-center space-y-3 max-w-2xl mx-auto">
             <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
               الجهاز الفني والتدريبي المعتمد
@@ -1039,44 +1044,87 @@ export function LandingPageView({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {displayCoaches.map((coach) => (
-              <div
-                key={coach.id}
-                className="rounded-2xl bg-[#0c1620] border border-[#1a2b3b] p-6 text-center space-y-3.5 hover:border-amber-500/50 transition-all flex flex-col justify-between"
-              >
-                <div className="space-y-3">
-                  <div className="h-20 w-20 mx-auto rounded-full bg-amber-500/20 border-2 border-amber-500 flex items-center justify-center text-amber-400 font-black text-xl shadow-lg shadow-amber-500/20">
-                    {coach.full_name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .slice(0, 2)
-                      .join("")}
-                  </div>
-
-                  <h3 className="text-base font-black text-white">{coach.full_name}</h3>
-                  <p className="text-xs text-amber-400 font-semibold">{coach.specialization}</p>
-
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
-                    {coach.bio || `خبرة تدريبية معتمدة تمتد لـ ${coach.experience_years || "عدة سنوات"} في تأهيل البراعم.`}
+          {/* Admin Quick Control Toolbar for Coaches Display */}
+          {currentUser?.role === "admin" && (
+            <div className="max-w-4xl mx-auto rounded-2xl bg-gradient-to-r from-amber-500/10 via-[#101b27] to-amber-500/10 border border-amber-500/30 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+              <div className="flex items-center gap-2.5 text-start">
+                <div className="h-8 w-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                  <Sparkles className="h-4 w-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-amber-300">
+                    لوحة تحكم الإدارة: إدارة الجهاز الفني بالواجهة
+                  </h4>
+                  <p className="text-[11px] text-slate-300">
+                    أنت تشاهد حالياً {displayCoaches.length} مدرباً معروضاً للزوار. يمكنك إخفاء مدرب، إضافة مدرب جديد، أو تعديل البيانات بنقرة زر من لوحة التحكم.
                   </p>
                 </div>
-
-                <div className="pt-3 border-t border-[#1a2b3b]">
-                  <a
-                    href={`https://api.whatsapp.com/send?phone=20${(coach.phone || "01012345678").replace(/^0+/, "")}&text=${encodeURIComponent(
-                      `مرحباً كابتن ${coach.full_name}، أود الاستفسار بخصوص تدريبات الأكاديمية.`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 py-1.5 px-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 transition-colors w-full"
-                  >
-                    <MessageCircle className="h-3.5 w-3.5" />
-                    <span>تواصل مباشر مع الكابتن</span>
-                  </a>
-                </div>
               </div>
-            ))}
+              <Link
+                href="/admin/coaches"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs px-4 py-2 shrink-0 transition-all shadow-md"
+              >
+                <span>إدارة المدربين وتعديل الظهور</span>
+                <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
+              </Link>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {displayCoaches.map((coach) => {
+              const cleanPhone = (coach.phone && coach.phone !== "غير محدد" ? coach.phone : "01000419832").replace(/^0+/, "");
+              return (
+                <div
+                  key={coach.id}
+                  className="rounded-2xl bg-[#0c1620] border border-[#1a2b3b] p-6 text-center space-y-3.5 hover:border-amber-500/50 transition-all flex flex-col justify-between relative group"
+                >
+                  {currentUser?.role === "admin" && (
+                    <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-800/80 text-[10px]">
+                      <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold">
+                        معروض بالواجهة 🌐
+                      </span>
+                      <Link
+                        href="/admin/coaches"
+                        className="text-amber-400 hover:underline font-bold"
+                      >
+                        تعديل الكابتن ⚙️
+                      </Link>
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    <div className="h-20 w-20 mx-auto rounded-full bg-amber-500/20 border-2 border-amber-500 flex items-center justify-center text-amber-400 font-black text-xl shadow-lg shadow-amber-500/20">
+                      {coach.full_name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .slice(0, 2)
+                        .join("")}
+                    </div>
+
+                    <h3 className="text-base font-black text-white">{coach.full_name}</h3>
+                    <p className="text-xs text-amber-400 font-semibold">{coach.specialization}</p>
+
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      {coach.bio || `خبرة تدريبية معتمدة تمتد لـ ${coach.experience_years || "عدة سنوات"} في تأهيل البراعم.`}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-[#1a2b3b]">
+                    <a
+                      href={`https://api.whatsapp.com/send?phone=20${cleanPhone}&text=${encodeURIComponent(
+                        `مرحباً كابتن ${coach.full_name}، أود الاستفسار بخصوص تدريبات الأكاديمية.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 py-2 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 hover:border-amber-500/40 transition-colors w-full"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" />
+                      <span>تواصل مباشر مع الكابتن</span>
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

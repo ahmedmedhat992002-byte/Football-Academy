@@ -333,3 +333,25 @@ export const INITIAL_TESTIMONIALS: Testimonial[] = [
   },
 ];
 
+/**
+ * Domain model for coaching staff profiles
+ */
+export type CoachStatus = "approved" | "pending_approval" | "rejected";
+
+export interface CoachProfile {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  password?: string;
+  specialization: string;
+  status: CoachStatus;
+  experience_years?: string;
+  bio?: string;
+  assigned_groups?: string[];
+  created_at: string;
+  show_on_landing?: boolean;
+  display_order?: number;
+}
+
+
