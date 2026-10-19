@@ -6,8 +6,9 @@ import { PlayerCard } from "./player-card";
 import { PlayerFormDialog } from "./player-form-dialog";
 import { PlayersFilterBar } from "./players-filter-bar";
 import { Button } from "@/components/ui/button";
-import { UserCheck, Plus } from "lucide-react";
+import { UserCheck, Plus, FileSpreadsheet } from "lucide-react";
 import { t } from "@/lib/i18n/translations";
+import { exportPlayersToExcel } from "@/lib/utils/export-excel";
 
 interface PlayersManagerViewProps {
   initialPlayers: Player[];
@@ -84,17 +85,30 @@ export function PlayersManagerView({
           </div>
         </div>
 
-        {canManage && (
+        <div className="flex items-center gap-2">
           <Button
             type="button"
-            variant="pitch"
-            onClick={handleCreate}
-            className="gap-2 font-bold shadow-md h-11"
+            variant="outline"
+            onClick={() => exportPlayersToExcel(filteredPlayers, groups)}
+            className="gap-2 font-bold h-11 border-emerald-500/30 text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
+            title="تنزيل كشف اللاعبين بصيغة Excel"
           >
-            <Plus className="h-4 w-4" />
-            <span>{t.players.addPlayer}</span>
+            <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+            <span>تصدير Excel</span>
           </Button>
-        )}
+
+          {canManage && (
+            <Button
+              type="button"
+              variant="pitch"
+              onClick={handleCreate}
+              className="gap-2 font-bold shadow-md h-11"
+            >
+              <Plus className="h-4 w-4" />
+              <span>{t.players.addPlayer}</span>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Filter Bar */}

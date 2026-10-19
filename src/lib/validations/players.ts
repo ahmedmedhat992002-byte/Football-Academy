@@ -13,6 +13,10 @@ export const playerSchema = z.object({
   ),
   notes: z.string().optional().nullable(),
   photo_url: z.string().optional().nullable(),
+  kit_size: z.string().optional().nullable(),
+  kit_received: z.boolean().optional(),
+  kit_received_date: z.string().optional().nullable(),
+  jersey_number: z.string().optional().nullable(),
 });
 
 export type PlayerInput = z.infer<typeof playerSchema>;

@@ -53,6 +53,7 @@ export interface PlayerAttendanceRow {
   status: AttendanceStatus;
   note: string;
   emergencyPhone: string;
+  activeInjury?: string;
 }
 
 /**
@@ -104,6 +105,7 @@ export async function getAttendanceRosterForSession(
       status: (existing?.status as AttendanceStatus) || "present",
       note: existing?.note || "",
       emergencyPhone: player.emergency_phone || "",
+      activeInjury: player.active_injury ? player.active_injury.injury_type : undefined,
     };
   });
 

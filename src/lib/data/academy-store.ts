@@ -14,6 +14,12 @@ export type Group = Database["public"]["Tables"]["groups"]["Row"] & {
 export type Player = Database["public"]["Tables"]["players"]["Row"] & {
   group_name?: string;
   parent_name?: string;
+  kit_size?: string;
+  kit_received?: boolean;
+  kit_received_date?: string;
+  jersey_number?: string;
+  active_injury?: PlayerInjury;
+  badges_count?: number;
 };
 
 export const INITIAL_GROUPS: Group[] = [
@@ -170,3 +176,75 @@ export type Evaluation = Database["public"]["Tables"]["evaluations"]["Row"] & {
 
 // Clean real state: starts empty with 0 mock evaluations
 export const INITIAL_EVALUATIONS: Evaluation[] = [];
+
+/**
+ * Domain model for Academy matches and tournaments.
+ */
+export type MatchType = "friendly" | "tournament" | "league";
+export type MatchStatus = "upcoming" | "completed" | "cancelled";
+
+export interface AcademyMatch {
+  id: string;
+  group_id: string;
+  group_name?: string;
+  opponent: string;
+  match_date: string;
+  match_time: string;
+  location: string;
+  match_type: MatchType;
+  status: MatchStatus;
+  our_score?: number | null;
+  opponent_score?: number | null;
+  scorers?: string[];
+  man_of_the_match?: string | null;
+  lineup_player_ids?: string[];
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export const INITIAL_MATCHES: AcademyMatch[] = [];
+
+/**
+ * Domain model for player medical records and injuries.
+ */
+export type InjuryStatus = "active" | "recovering" | "recovered";
+
+export interface PlayerInjury {
+  id: string;
+  player_id: string;
+  player_name?: string;
+  injury_type: string;
+  description?: string;
+  injury_date: string;
+  expected_return_date?: string;
+  status: InjuryStatus;
+  doctor_notes?: string;
+  created_at?: string;
+}
+
+export const INITIAL_INJURIES: PlayerInjury[] = [];
+
+/**
+ * Domain model for player motivational badges and achievements.
+ */
+export type BadgeType =
+  | "star_of_week"
+  | "top_scorer"
+  | "wall_defense"
+  | "iron_discipline"
+  | "fair_play";
+
+export interface PlayerBadge {
+  id: string;
+  player_id: string;
+  player_name?: string;
+  badge_type: BadgeType;
+  badge_title: string;
+  awarded_date: string;
+  coach_name?: string;
+  notes?: string;
+  created_at?: string;
+}
+
+export const INITIAL_BADGES: PlayerBadge[] = [];

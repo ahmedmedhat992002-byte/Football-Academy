@@ -9,6 +9,8 @@ import {
   getSharedPlayers,
   saveSharedPlayer,
   getSharedRegisteredUsers,
+  getSharedInjuries,
+  getSharedBadges,
 } from "@/lib/data/shared-store";
 import { cachedFetch, invalidateCache } from "@/lib/data/cache-manager";
 
@@ -157,6 +159,22 @@ export async function getPlayers(options?: {
     );
   }
 
+  // Enrich with active injury and badges
+  const injuries = getSharedInjuries();
+  const badges = getSharedBadges();
+
+  result = result.map((p) => {
+    const activeInjury = injuries.find(
+      (i) => i.player_id === p.id && i.status !== "recovered"
+    );
+    const badgesCount = badges.filter((b) => b.player_id === p.id).length;
+    return {
+      ...p,
+      active_injury: activeInjury,
+      badges_count: badgesCount,
+    };
+  });
+
     return result;
   }, 45000);
 }
@@ -185,6 +203,10 @@ export async function savePlayer(
     emergency_phone,
     notes,
     photo_url,
+    kit_size,
+    kit_received,
+    kit_received_date,
+    jersey_number,
   } = parsed.data;
 
   // Find group name for display
@@ -264,6 +286,10 @@ export async function savePlayer(
       emergency_phone,
       notes: notes || null,
       photo_url: photo_url || null,
+      kit_size: kit_size || (currentCustom[existingIndex] as any)?.kit_size || undefined,
+      kit_received: kit_received !== undefined ? kit_received : (currentCustom[existingIndex] as any)?.kit_received || false,
+      kit_received_date: kit_received_date || (currentCustom[existingIndex] as any)?.kit_received_date || undefined,
+      jersey_number: jersey_number || (currentCustom[existingIndex] as any)?.jersey_number || undefined,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -286,6 +312,10 @@ export async function savePlayer(
       emergency_phone,
       notes: notes || null,
       photo_url: photo_url || null,
+      kit_size: kit_size || undefined,
+      kit_received: kit_received || false,
+      kit_received_date: kit_received ? new Date().toISOString() : undefined,
+      jersey_number: jersey_number || undefined,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -327,4 +357,35 @@ export async function deletePlayer(playerId: string): Promise<{ success: boolean
   revalidatePath("/admin/players");
 
   return { success: true };
+}
+
+/**
+ * Toggle or update player kit receipt status
+ */
+export async function togglePlayerKit(
+  playerId: string,
+  received: boolean,
+  size?: string
+): Promise<{ success: boolean }> {
+  try {
+    const players = await getPlayers();
+    const target = players.find((p) => p.id === playerId);
+    if (!target) return { success: false };
+
+    const updated: Player = {
+      ...target,
+      kit_received: received,
+      kit_received_date: received ? new Date().toISOString() : undefined,
+      kit_size: size || (target as any).kit_size || "M",
+    };
+
+    saveSharedPlayer(updated);
+    invalidateCache("players");
+    revalidatePath("/admin/players");
+    revalidatePath("/parent/children");
+    return { success: true };
+  } catch (err) {
+    console.error("Failed to toggle player kit:", err);
+    return { success: false };
+  }
 }

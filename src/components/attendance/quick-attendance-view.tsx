@@ -25,8 +25,11 @@ import {
   MapPin,
   Users,
   MessageSquare,
+  HeartPulse,
 } from "lucide-react";
 import { formatDate } from "@/lib/i18n/formatters";
+import { WhatsAppButton } from "@/components/ui/whatsapp-button";
+import { WhatsAppTemplates } from "@/lib/utils/whatsapp";
 
 interface QuickAttendanceViewProps {
   session: Session;
@@ -268,19 +271,35 @@ export function QuickAttendanceView({
                     {index + 1}
                   </div>
                   <div>
-                    <h3 className="font-bold text-white text-sm">
-                      {player.playerName}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-white text-sm">
+                        {player.playerName}
+                      </h3>
+                      {player.activeInjury && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-black animate-pulse">
+                          <HeartPulse className="w-3 h-3 text-rose-400" />
+                          مصاب: {player.activeInjury}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-400">
                       <span>طوارئ: {player.emergencyPhone || "غير مسجل"}</span>
                       {player.emergencyPhone && (
-                        <a
-                          href={`tel:${player.emergencyPhone}`}
-                          className="text-amber-400 hover:text-amber-300 p-0.5 rounded"
-                          title="اتصال طارئ"
-                        >
-                          <PhoneCall className="w-3.5 h-3.5" />
-                        </a>
+                        <>
+                          <a
+                            href={`tel:${player.emergencyPhone}`}
+                            className="text-amber-400 hover:text-amber-300 p-0.5 rounded"
+                            title="اتصال طارئ"
+                          >
+                            <PhoneCall className="w-3.5 h-3.5" />
+                          </a>
+                          <WhatsAppButton
+                            phone={player.emergencyPhone}
+                            message={`مرحباً ولي أمر البطل (${player.playerName})، نود الاطمئنان عليه ومتابعة حضوره في تدريب اليوم بأكاديمية FIFA FC ACADEMY ⚽`}
+                            variant="badge"
+                            label="واتساب"
+                          />
+                        </>
                       )}
                     </div>
                   </div>

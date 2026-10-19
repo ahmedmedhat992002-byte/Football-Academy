@@ -13,6 +13,7 @@ import {
   Award,
   FileSpreadsheet,
   Settings,
+  Trophy,
   LogOut,
   ChevronRight,
   PanelRightOpen,
@@ -42,22 +43,22 @@ export function Sidebar({
   const adminDockItems: DockItem[] = [
     { id: "home", href: "/admin", label: "لوحة التحكم", icon: Home },
     { id: "players", href: "/admin/players", label: "قائمة اللاعبين", icon: Users },
+    { id: "matches", href: "/admin/matches", label: "المباريات والبطولات", icon: Trophy },
     { id: "coaches", href: "/admin/coaches", label: "الجهاز الفني والمدربين", icon: UserCheck },
     { id: "attendance", href: "/admin/attendance", label: "تسجيل الحضور", icon: ClipboardCheck },
     { id: "finance", href: "/admin/subscriptions", label: "المالية والاشتراكات", icon: CreditCard },
     { id: "reports", href: "/admin/evaluations", label: "التقارير والتقييمات", icon: Award },
-    { id: "files", href: "/admin/sessions", label: "الملفات والمستندات", icon: FileSpreadsheet },
+    { id: "files", href: "/admin/sessions", label: "الحصص والتمارين", icon: FileSpreadsheet },
     { id: "settings", href: "/admin/settings", label: "إعدادات الأكاديمية", icon: Settings },
   ];
 
   const coachDockItems: DockItem[] = [
     { id: "home", href: "/coach", label: "لوحة التحكم", icon: Home },
+    { id: "matches", href: "/coach/matches", label: "المباريات والبطولات", icon: Trophy },
     { id: "players", href: "/coach/groups", label: "المجموعات والفرق", icon: Users },
-    { id: "coaches", href: "/coach", label: "الجهاز الفني والمدربين", icon: UserCheck },
     { id: "attendance", href: "/coach/pitch", label: "تسجيل الحضور الميداني", icon: ClipboardCheck },
-    { id: "finance", href: "/coach/sessions", label: "جدول التدريبات", icon: CreditCard },
+    { id: "sessions", href: "/coach/sessions", label: "جدول التدريبات", icon: FileSpreadsheet },
     { id: "reports", href: "/coach/evaluations", label: "تقييمات اللاعبين", icon: Award },
-    { id: "files", href: "/coach/sessions", label: "الملفات والمستندات", icon: FileSpreadsheet },
     { id: "settings", href: "/coach", label: "الإعدادات", icon: Settings },
   ];
 

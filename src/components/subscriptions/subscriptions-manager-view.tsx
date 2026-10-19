@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { WhatsAppButton } from "@/components/ui/whatsapp-button";
+import { WhatsAppTemplates } from "@/lib/utils/whatsapp";
 import {
   Plus,
   Search,
@@ -476,6 +478,28 @@ export function SubscriptionsManagerView({
                               تحصيل الآن
                             </Button>
                           )}
+
+                          {/* WhatsApp Reminder Button */}
+                          {(() => {
+                            const p = players.find((x) => x.id === sub.player_id);
+                            const phone = p?.emergency_phone || "";
+                            return (
+                              <WhatsAppButton
+                                phone={phone}
+                                message={WhatsAppTemplates.subscriptionReminder({
+                                  parentName: p?.parent_name,
+                                  playerName: sub.player_name || "البطل",
+                                  planName: sub.plan_name || "باقة التدريب",
+                                  amount: sub.plan_price || 0,
+                                  dueDate: formatDate(sub.end_date),
+                                })}
+                                variant="outline"
+                                size="sm"
+                                label="تذكير واتساب"
+                              />
+                            );
+                          })()}
+
                           <Button
                             type="button"
                             variant="outline"

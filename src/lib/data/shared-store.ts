@@ -1,6 +1,13 @@
 import fs from "fs";
 import path from "path";
-import type { Player, PlayerSubscription, PaymentRecord } from "@/lib/data/academy-store";
+import type {
+  Player,
+  PlayerSubscription,
+  PaymentRecord,
+  AcademyMatch,
+  PlayerInjury,
+  PlayerBadge,
+} from "@/lib/data/academy-store";
 
 export interface SharedRegisteredUser {
   id: string;
@@ -20,6 +27,9 @@ export interface AcademySharedData {
   subscriptions: PlayerSubscription[];
   registeredUsers: SharedRegisteredUser[];
   payments: PaymentRecord[];
+  matches: AcademyMatch[];
+  injuries: PlayerInjury[];
+  badges: PlayerBadge[];
 }
 
 declare global {
@@ -49,6 +59,9 @@ function loadFromFile(): AcademySharedData {
         subscriptions: Array.isArray(parsed.subscriptions) ? parsed.subscriptions : [],
         registeredUsers: Array.isArray(parsed.registeredUsers) ? parsed.registeredUsers : [],
         payments: Array.isArray(parsed.payments) ? parsed.payments : [],
+        matches: Array.isArray(parsed.matches) ? parsed.matches : [],
+        injuries: Array.isArray(parsed.injuries) ? parsed.injuries : [],
+        badges: Array.isArray(parsed.badges) ? parsed.badges : [],
       };
     }
   } catch (err) {
@@ -59,6 +72,9 @@ function loadFromFile(): AcademySharedData {
     subscriptions: [],
     registeredUsers: [],
     payments: [],
+    matches: [],
+    injuries: [],
+    badges: [],
   };
 }
 
@@ -150,5 +166,71 @@ export function saveSharedPayment(payment: PaymentRecord): void {
     } else {
       store.payments.unshift(payment);
     }
+  });
+}
+
+// --- Matches Helpers ---
+export function getSharedMatches(): AcademyMatch[] {
+  return getSharedStore().matches;
+}
+
+export function saveSharedMatch(match: AcademyMatch): void {
+  persistSharedStore((store) => {
+    const idx = store.matches.findIndex((m) => m.id === match.id);
+    if (idx >= 0) {
+      store.matches[idx] = match;
+    } else {
+      store.matches.unshift(match);
+    }
+  });
+}
+
+export function deleteSharedMatch(id: string): void {
+  persistSharedStore((store) => {
+    store.matches = store.matches.filter((m) => m.id !== id);
+  });
+}
+
+// --- Injuries Helpers ---
+export function getSharedInjuries(): PlayerInjury[] {
+  return getSharedStore().injuries;
+}
+
+export function saveSharedInjury(injury: PlayerInjury): void {
+  persistSharedStore((store) => {
+    const idx = store.injuries.findIndex((i) => i.id === injury.id);
+    if (idx >= 0) {
+      store.injuries[idx] = injury;
+    } else {
+      store.injuries.unshift(injury);
+    }
+  });
+}
+
+export function deleteSharedInjury(id: string): void {
+  persistSharedStore((store) => {
+    store.injuries = store.injuries.filter((i) => i.id !== id);
+  });
+}
+
+// --- Badges Helpers ---
+export function getSharedBadges(): PlayerBadge[] {
+  return getSharedStore().badges;
+}
+
+export function saveSharedBadge(badge: PlayerBadge): void {
+  persistSharedStore((store) => {
+    const idx = store.badges.findIndex((b) => b.id === badge.id);
+    if (idx >= 0) {
+      store.badges[idx] = badge;
+    } else {
+      store.badges.unshift(badge);
+    }
+  });
+}
+
+export function deleteSharedBadge(id: string): void {
+  persistSharedStore((store) => {
+    store.badges = store.badges.filter((b) => b.id !== id);
   });
 }

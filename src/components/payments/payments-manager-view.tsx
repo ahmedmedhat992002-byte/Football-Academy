@@ -23,7 +23,9 @@ import {
   Calendar,
   X,
   CheckCircle2,
+  FileSpreadsheet,
 } from "lucide-react";
+import { exportPaymentsToExcel } from "@/lib/utils/export-excel";
 
 interface PaymentsManagerViewProps {
   initialPayments: PaymentRecord[];
@@ -101,13 +103,26 @@ export function PaymentsManagerView({
           </p>
         </div>
 
-        <Button
-          onClick={() => setIsFormOpen(true)}
-          className="gap-2 text-xs font-bold w-full sm:w-auto"
-        >
-          <Plus className="w-4 h-4" />
-          تسجيل سند سداد جديد
-        </Button>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => exportPaymentsToExcel(filteredPayments)}
+            className="gap-2 text-xs font-bold border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20"
+            title="تصدير كشف المدفوعات والاشتراكات إلى Excel"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+            <span>تصدير Excel</span>
+          </Button>
+
+          <Button
+            onClick={() => setIsFormOpen(true)}
+            className="gap-2 text-xs font-bold w-full sm:w-auto"
+          >
+            <Plus className="w-4 h-4" />
+            تسجيل سند سداد جديد
+          </Button>
+        </div>
       </div>
 
       {/* Financial Metrics */}

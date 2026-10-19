@@ -40,6 +40,9 @@ export function PlayerFormDialog({
       status: playerToEdit?.status || "active",
       emergency_phone: playerToEdit?.emergency_phone || "",
       notes: playerToEdit?.notes || "",
+      kit_size: (playerToEdit as any)?.kit_size || "M",
+      kit_received: (playerToEdit as any)?.kit_received || false,
+      jersey_number: (playerToEdit as any)?.jersey_number || "",
     },
   });
 
@@ -161,6 +164,55 @@ export function PlayerFormDialog({
             {errors.emergency_phone && (
               <p className="text-[11px] font-semibold text-rose-600">{errors.emergency_phone.message}</p>
             )}
+          </div>
+
+          {/* Kit & Uniform Distribution */}
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
+            <span className="text-xs font-black text-slate-800 block">
+              🎽 تجهيزات وزي الأكاديمية (Uniform & Kit)
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-slate-600">مقاس الزي الرياضي</label>
+                <select
+                  {...register("kit_size")}
+                  className="w-full h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-800 focus:outline-none"
+                >
+                  <option value="6">مقاس 6 (براعم صغار)</option>
+                  <option value="8">مقاس 8</option>
+                  <option value="10">مقاس 10</option>
+                  <option value="12">مقاس 12</option>
+                  <option value="14">مقاس 14</option>
+                  <option value="16">مقاس 16</option>
+                  <option value="S">S (ناشئين)</option>
+                  <option value="M">M (وسط)</option>
+                  <option value="L">L (كبير)</option>
+                  <option value="XL">XL</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-slate-600">رقم القميص المفضل</label>
+                <Input
+                  type="text"
+                  placeholder="مثال: 10 أو 7"
+                  {...register("jersey_number")}
+                  className="h-9 text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                type="checkbox"
+                id="kit_received"
+                {...register("kit_received")}
+                className="w-4 h-4 rounded border-slate-300 text-amber-500 focus:ring-amber-400"
+              />
+              <label htmlFor="kit_received" className="text-xs font-bold text-slate-700 cursor-pointer">
+                تم تسليم طقم الأكاديمية للاعب
+              </label>
+            </div>
           </div>
 
           {/* Notes */}
