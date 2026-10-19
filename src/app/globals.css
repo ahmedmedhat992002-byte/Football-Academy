@@ -102,6 +102,85 @@ textarea {
   will-change: transform, opacity;
 }
 
+/* Fast, smooth page enter animation */
+@keyframes pageEnterAnim {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-enter {
+  animation: pageEnterAnim 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, transform;
+}
+
+/* Mini Logo Rotating Gold Ring */
+@keyframes orbitSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-orbit-spin {
+  animation: orbitSpin 1s linear infinite;
+  will-change: transform;
+}
+
+/* Logo pulse / heartbeat */
+@keyframes logoPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.35));
+  }
+  50% {
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 14px rgba(245, 158, 11, 0.75));
+  }
+}
+
+.animate-logo-pulse {
+  animation: logoPulse 1.6s ease-in-out infinite;
+  will-change: transform, filter;
+}
+
+/* Gold glow shimmer for loading bar */
+@keyframes shimmerGlow {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer-glow {
+  background-size: 200% 100%;
+  animation: shimmerGlow 1.5s linear infinite;
+}
+
+/* Snappy tactile touch & click on interactive elements */
+button,
+a,
+[role="button"] {
+  transition-property: color, background-color, border-color, transform, opacity, box-shadow;
+  transition-duration: 140ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+button:active,
+a:active,
+[role="button"]:active {
+  transform: scale(0.98);
+}
+
 /* Custom scrollbars for clean UI */
 ::-webkit-scrollbar {
   width: 6px;

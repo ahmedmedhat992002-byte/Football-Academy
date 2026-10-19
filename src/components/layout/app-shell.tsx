@@ -74,7 +74,7 @@ export function AppShell({
             !hideSidebar && isSidebarOpen ? "lg:pe-24 lg:ps-8" : "lg:px-8"
           }`}
         >
-          <div className="mx-auto max-w-[1560px] w-full">
+          <div className="mx-auto max-w-[1560px] w-full animate-page-enter">
             {children}
           </div>
         </main>

@@ -1,5 +1,6 @@
 import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LogoLoader } from "@/components/ui/logo-loader";
 
 interface RouteSkeletonProps {
   cardCount?: number;
@@ -13,7 +14,15 @@ export function RouteSkeleton({
   tableRowCount = 6,
 }: RouteSkeletonProps) {
   return (
-    <div className="space-y-6 p-4 md:p-6 animate-in fade-in duration-300">
+    <div className="space-y-6 p-4 md:p-6 animate-page-enter">
+      {/* Mini Logo Loading Header Banner */}
+      <LogoLoader
+        size="md"
+        variant="card"
+        text="جاري تحميل الصفحة وتحديث البيانات..."
+        subtext="FIFA FC ACADEMY • استجابة فورية ونظام ذكي"
+      />
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-2">

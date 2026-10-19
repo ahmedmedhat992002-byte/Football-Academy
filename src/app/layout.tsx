@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
 import "./globals.css";
+import { RouteProgressProvider } from "@/components/layout/route-progress-provider";
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -30,7 +31,9 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" className={cairo.variable} suppressHydrationWarning>
       <body className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased selection:bg-amber-500 selection:text-black">
-        {children}
+        <RouteProgressProvider>
+          {children}
+        </RouteProgressProvider>
       </body>
     </html>
   );
