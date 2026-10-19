@@ -24,16 +24,16 @@ export function AdminHeroBanner({ userName }: AdminHeroBannerProps) {
         </div>
 
         {/* Banner Inner Content */}
-        <div className="relative z-10 w-full p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="relative z-10 w-full p-4 sm:p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-6">
           {/* Right Side (RTL start): Welcome & Title */}
           <div className="text-start space-y-2 max-w-md">
-            <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-300 border border-amber-500/30">
-              <Shield className="h-3.5 w-3.5 text-amber-400" />
-              <span>مرحباً بك يا {userName}</span>
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-amber-500/20 px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-bold text-amber-300 border border-amber-500/30">
+              <Shield className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+              <span className="truncate">مرحباً بك يا {userName}</span>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="relative h-12 w-12 rounded-full ring-2 ring-amber-400 overflow-hidden bg-black shrink-0 shadow-lg shadow-amber-500/25">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-full ring-2 ring-amber-400 overflow-hidden bg-black shrink-0 shadow-lg shadow-amber-500/25">
                 <Image
                   src="/images/logo.png"
                   alt="FIFA FC ACADEMY"
@@ -42,10 +42,10 @@ export function AdminHeroBanner({ userName }: AdminHeroBannerProps) {
                 />
               </div>
               <div>
-                <h2 className="text-2xl md:text-3xl font-black text-amber-400 tracking-wider font-sans">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-amber-400 tracking-wider font-sans">
                   FIFA FC ACADEMY
                 </h2>
-                <span className="text-[11px] text-amber-300/90 font-bold block">
+                <span className="text-[10px] sm:text-[11px] text-amber-300/90 font-bold block">
                   لوحة التحكم والإدارة المركزية
                 </span>
               </div>

@@ -24,7 +24,7 @@ export function AdminRecentActivity({
   totalGroups,
 }: AdminRecentActivityProps) {
   return (
-    <div className="lg:col-span-4 rounded-2xl bg-white border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between text-start">
+    <div className="lg:col-span-4 rounded-2xl bg-white border border-slate-200/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between text-start">
       <div>
         {/* Header */}
         <div className="flex items-center gap-2 pb-4 border-b border-slate-100">

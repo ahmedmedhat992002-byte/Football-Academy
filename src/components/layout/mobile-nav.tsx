@@ -8,9 +8,11 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Users2,
-  ClipboardCheck,
+  UserCheck,
+  CalendarDays,
   CreditCard,
   Zap,
+  Award,
 } from "lucide-react";
 
 interface MobileNavProps {
@@ -27,45 +29,62 @@ interface MobileNavItem {
 export function MobileNav({ userRole = "admin" }: MobileNavProps) {
   const pathname = usePathname();
 
-  const mobileLinks: MobileNavItem[] =
+  const adminLinks: MobileNavItem[] = [
+    { href: "/admin", label: "الرئيسية", icon: LayoutDashboard },
+    { href: "/admin/players", label: "اللاعبين", icon: Users2 },
+    { href: "/admin/coaches", label: "المدربين", icon: UserCheck },
+    { href: "/admin/sessions", label: "الحصص", icon: CalendarDays },
+    { href: "/admin/subscriptions", label: "الاشتراكات", icon: CreditCard },
+  ];
+
+  const coachLinks: MobileNavItem[] = [
+    { href: "/coach", label: "الرئيسية", icon: LayoutDashboard },
+    { href: "/coach/groups", label: "الفرق", icon: Users2 },
+    { href: "/coach/pitch", label: "الميدان", icon: Zap, highlight: true },
+    { href: "/coach/sessions", label: "الحصص", icon: CalendarDays },
+    { href: "/coach/evaluations", label: "التقييم", icon: Award },
+  ];
+
+  const parentLinks: MobileNavItem[] = [
+    { href: "/parent", label: "الرئيسية", icon: LayoutDashboard },
+    { href: "/parent/children", label: "الأبناء", icon: Users2 },
+    { href: "/parent/sessions", label: "التمارين", icon: CalendarDays },
+    { href: "/parent/payments", label: "الاشتراك", icon: CreditCard },
+    { href: "/parent/report", label: "التقرير", icon: Award },
+  ];
+
+  const mobileLinks =
     userRole === "coach"
-      ? [
-          { href: "/coach", label: t.nav.dashboard, icon: LayoutDashboard },
-          { href: "/coach/groups", label: t.nav.groups, icon: Users2 },
-          { href: "/coach/pitch", label: t.attendance.quickAction, icon: Zap, highlight: true },
-          { href: "/coach/sessions", label: t.nav.sessions, icon: ClipboardCheck },
-        ]
+      ? coachLinks
       : userRole === "parent"
-      ? [
-          { href: "/parent", label: t.nav.dashboard, icon: LayoutDashboard },
-          { href: "/parent/children", label: t.parentPortal.childrenList, icon: Users2 },
-          { href: "/parent/payments", label: t.nav.payments, icon: CreditCard },
-          { href: "/parent/report", label: t.nav.monthlyReport, icon: ClipboardCheck },
-        ]
-      : [
-          { href: "/admin", label: t.nav.dashboard, icon: LayoutDashboard },
-          { href: "/admin/groups", label: t.nav.groups, icon: Users2 },
-          { href: "/admin/sessions", label: t.nav.attendance, icon: ClipboardCheck },
-          { href: "/admin/payments", label: t.nav.payments, icon: CreditCard },
-        ];
+      ? parentLinks
+      : adminLinks;
 
   return (
-    <nav className="fixed bottom-0 start-0 end-0 z-40 flex h-16 items-center justify-around border-t border-[#1a232f] bg-[#090e15]/95 px-2 backdrop-blur-md lg:hidden shadow-lg shadow-black/40">
+    <nav
+      aria-label="شريط التنقل السفلي للموبايل"
+      className="fixed bottom-0 start-0 end-0 z-40 flex h-16 items-center justify-around border-t border-[#1a232f] bg-[#090e15]/95 px-1 sm:px-2 backdrop-blur-xl lg:hidden shadow-2xl shadow-black/80 pb-[env(safe-area-inset-bottom)]"
+    >
       {mobileLinks.map((item) => {
         const Icon = item.icon;
-        const isActive = pathname === item.href;
+        const isActive =
+          pathname === item.href ||
+          (item.href !== "/admin" &&
+            item.href !== "/coach" &&
+            item.href !== "/parent" &&
+            pathname.startsWith(item.href));
 
         if (item.highlight) {
           return (
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-col items-center justify-center -mt-6 group"
+              className="flex flex-col items-center justify-center -mt-6 group active:scale-90 transition-transform duration-150"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-500 text-slate-950 shadow-md shadow-amber-500/30 ring-4 ring-[#090e15] group-active:scale-95 transition-transform">
-                <Icon className="h-6 w-6" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-500 text-slate-950 shadow-lg shadow-amber-500/40 ring-4 ring-[#090e15]">
+                <Icon className="h-6 w-6 stroke-[2.5]" />
               </div>
-              <span className="mt-1 text-[11px] font-bold text-amber-400">
+              <span className="mt-1 text-[10px] font-black text-amber-400">
                 {item.label}
               </span>
             </Link>
@@ -77,14 +96,18 @@ export function MobileNav({ userRole = "admin" }: MobileNavProps) {
             key={item.href}
             href={item.href}
             className={cn(
-              "flex flex-1 flex-col items-center justify-center py-1 transition-colors",
+              "flex flex-1 flex-col items-center justify-center py-1.5 active:scale-95 transition-all duration-150 relative",
               isActive
                 ? "text-amber-400 font-bold"
                 : "text-slate-400 hover:text-amber-200"
             )}
           >
-            <Icon className={cn("h-5 w-5", isActive && "stroke-[2.5]")} />
-            <span className="mt-0.5 text-[11px] truncate max-w-[70px]">
+            {/* Top gold active dot indicator */}
+            {isActive && (
+              <span className="absolute top-0.5 h-1 w-5 rounded-full bg-amber-400 shadow-sm shadow-amber-400/50" />
+            )}
+            <Icon className={cn("h-5 w-5", isActive ? "stroke-[2.5]" : "stroke-2")} />
+            <span className="mt-0.5 text-[10px] sm:text-[11px] truncate max-w-[64px] text-center">
               {item.label}
             </span>
           </Link>

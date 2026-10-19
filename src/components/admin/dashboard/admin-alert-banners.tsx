@@ -38,7 +38,7 @@ export function AdminAlertBanners({
           </div>
           <Link
             href="/admin/coaches"
-            className="px-5 py-2.5 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-black text-xs shrink-0 shadow-lg shadow-yellow-950 transition-all flex items-center gap-2"
+            className="w-full sm:w-auto justify-center px-5 py-2.5 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-black text-xs shrink-0 shadow-lg shadow-yellow-950 active:scale-95 transition-all flex items-center gap-2"
           >
             <span>مراجعة واعتماد المدربين الآن</span>
             <ChevronLeft className="w-4 h-4" />
@@ -67,7 +67,7 @@ export function AdminAlertBanners({
           </div>
           <Link
             href="/admin/subscriptions"
-            className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shrink-0 shadow-lg shadow-amber-950 transition-all flex items-center gap-2"
+            className="w-full sm:w-auto justify-center px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shrink-0 shadow-lg shadow-amber-950 active:scale-95 transition-all flex items-center gap-2"
           >
             <span>مراجعة واعتماد الاشتراكات الآن</span>
             <ChevronLeft className="w-4 h-4" />

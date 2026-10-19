@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Header } from "./header";
 import { Sidebar } from "./sidebar";
 import { MobileNav } from "./mobile-nav";
 import { Footer } from "./footer";
+import { AiChatWidget } from "@/components/ai/ai-chat-widget";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -19,23 +20,68 @@ export function AppShell({
   userName = "المستخدم",
   hideSidebar = false,
 }: AppShellProps) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  // Restore sidebar visibility preference from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("academy_sidebar_visible");
+      if (saved !== null) {
+        setIsSidebarOpen(saved === "true");
+      }
+    } catch {
+      // Ignore
+    }
+  }, []);
+
+  const handleToggleSidebar = () => {
+    setIsSidebarOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("academy_sidebar_visible", String(next));
+      } catch {
+        // Ignore
+      }
+      return next;
+    });
+  };
+
   return (
-    <div className="flex min-h-screen flex-col bg-[#f4f7f9] text-slate-900 font-sans">
-      {/* Header */}
-      <Header userName={userName} userRole={userRole} />
+    <div className="flex min-h-screen flex-col bg-[#f4f7f9] text-slate-900 font-sans relative">
+      {/* Top Header */}
+      <Header
+        userName={userName}
+        userRole={userRole}
+        isSidebarOpen={isSidebarOpen}
+        onToggleSidebar={handleToggleSidebar}
+        canToggleSidebar={!hideSidebar}
+      />
 
-      {/* Main layout */}
-      <div className="flex flex-1 overflow-x-hidden">
-        {/* Desktop Sidebar (optional when navigating deeper modules) */}
-        {!hideSidebar && <Sidebar userRole={userRole} />}
+      {/* Main Layout Area */}
+      <div className="relative flex flex-1 w-full overflow-x-hidden">
+        {/* Floating Mini-Dock (Fixed on right side, can show/hide) */}
+        {!hideSidebar && (
+          <Sidebar
+            userRole={userRole}
+            isOpen={isSidebarOpen}
+            onToggle={handleToggleSidebar}
+          />
+        )}
 
-        {/* Content area */}
-        <main className="flex-1 px-4 py-5 md:px-8 pb-20 lg:pb-8">
-          <div className="mx-auto max-w-[1440px]">
+        {/* Main Content Area - Expands when sidebar is hidden */}
+        <main
+          className={`flex-1 px-3 sm:px-4 md:px-8 py-4 sm:py-6 pb-24 lg:pb-8 transition-all duration-300 ease-in-out ${
+            !hideSidebar && isSidebarOpen ? "lg:pe-24 lg:ps-8" : "lg:px-8"
+          }`}
+        >
+          <div className="mx-auto max-w-[1560px] w-full">
             {children}
           </div>
         </main>
       </div>
+
+      {/* Floating AI Chatbot Widget */}
+      <AiChatWidget userRole={userRole} userName={userName} />
 
       {/* Footer */}
       <Footer />
