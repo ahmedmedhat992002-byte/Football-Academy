@@ -7,6 +7,7 @@ import type {
   AcademyMatch,
   PlayerInjury,
   PlayerBadge,
+  Testimonial,
 } from "@/lib/data/academy-store";
 
 export interface SharedRegisteredUser {
@@ -30,6 +31,7 @@ export interface AcademySharedData {
   matches: AcademyMatch[];
   injuries: PlayerInjury[];
   badges: PlayerBadge[];
+  testimonials: Testimonial[];
 }
 
 declare global {
@@ -62,6 +64,7 @@ function loadFromFile(): AcademySharedData {
         matches: Array.isArray(parsed.matches) ? parsed.matches : [],
         injuries: Array.isArray(parsed.injuries) ? parsed.injuries : [],
         badges: Array.isArray(parsed.badges) ? parsed.badges : [],
+        testimonials: Array.isArray(parsed.testimonials) ? parsed.testimonials : [],
       };
     }
   } catch (err) {
@@ -75,6 +78,7 @@ function loadFromFile(): AcademySharedData {
     matches: [],
     injuries: [],
     badges: [],
+    testimonials: [],
   };
 }
 
@@ -261,3 +265,29 @@ export function deleteSharedBadge(id: string): void {
     store.badges = store.badges.filter((b) => b.id !== id);
   });
 }
+
+// --- Testimonials Helpers ---
+export function getSharedTestimonials(): Testimonial[] {
+  return getSharedStore().testimonials;
+}
+
+export function saveSharedTestimonial(testimonial: Testimonial): void {
+  persistSharedStore((store) => {
+    if (!Array.isArray(store.testimonials)) store.testimonials = [];
+    const idx = store.testimonials.findIndex((t) => t.id === testimonial.id);
+    if (idx >= 0) {
+      store.testimonials[idx] = testimonial;
+    } else {
+      store.testimonials.unshift(testimonial);
+    }
+  });
+}
+
+export function deleteSharedTestimonial(id: string): void {
+  persistSharedStore((store) => {
+    if (Array.isArray(store.testimonials)) {
+      store.testimonials = store.testimonials.filter((t) => t.id !== id);
+    }
+  });
+}
+

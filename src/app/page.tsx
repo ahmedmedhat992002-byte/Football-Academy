@@ -4,6 +4,7 @@ import { getPlayers } from "@/lib/actions/players";
 import { getGroups } from "@/lib/actions/groups";
 import { getCoaches } from "@/lib/actions/coaches";
 import { getSubscriptionPlans } from "@/lib/actions/plans";
+import { getTestimonials } from "@/lib/actions/testimonials";
 import { LandingPageView } from "@/components/landing/landing-page-view";
 import type { Metadata } from "next";
 
@@ -15,12 +16,13 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [user, players, groups, coaches, plans] = await Promise.all([
+  const [user, players, groups, coaches, plans, testimonials] = await Promise.all([
     getCurrentUser(),
     getPlayers(),
     getGroups(),
     getCoaches(),
     getSubscriptionPlans(),
+    getTestimonials(),
   ]);
 
   return (
@@ -30,6 +32,7 @@ export default async function HomePage() {
       groups={groups}
       coaches={coaches}
       plans={plans}
+      initialTestimonials={testimonials}
     />
   );
 }

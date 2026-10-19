@@ -284,3 +284,52 @@ export const BADGE_DEFINITIONS: Record<
     color: "from-cyan-500 to-blue-600",
   },
 };
+
+/**
+ * Domain model for real parent reviews and testimonials
+ */
+export interface Testimonial {
+  id: string;
+  parent_name: string;
+  child_name?: string;
+  age_category?: string;
+  rating: number; // 1 to 5
+  content: string;
+  is_verified: boolean;
+  parent_email?: string;
+  created_at: string;
+}
+
+export const INITIAL_TESTIMONIALS: Testimonial[] = [
+  {
+    id: "testim-001",
+    parent_name: "أ. وائل الشاذلي",
+    child_name: "عمر",
+    age_category: "U10",
+    rating: 5,
+    content: "التطور في مهارات ابني عمر (U10) كان ملحوظاً جداً خلال 3 أشهر فقط. الأكاديمية تتميز بالانضباط والمدربين يتعاملون باحترافية وأسلوب تربوي رائع.",
+    is_verified: true,
+    created_at: "2026-02-10T10:00:00Z",
+  },
+  {
+    id: "testim-002",
+    parent_name: "د. سارة عبد الحميد",
+    child_name: "ياسين",
+    age_category: "U8",
+    rating: 5,
+    content: "أفضل ما في الأكاديمية هو المنظومة الإلكترونية، تأتيني رسالة على هاتفي فور تسجيل حضور ابني في الملعب، والتقرير الشهري يعطيني صورة واضحة لنقاط القوة والضعف.",
+    is_verified: true,
+    created_at: "2026-02-18T10:00:00Z",
+  },
+  {
+    id: "testim-003",
+    parent_name: "م. حسام النجار",
+    child_name: "زياد",
+    age_category: "U12",
+    rating: 5,
+    content: "كابتن محمود مدرب ممتاز جداً، ابني كان خجولاً في اللعب الجماعي والآن أصبح قائداً لفريقه في فئة U12. شكراً لإدارة الأكاديمية على الاهتمام الحقيقي.",
+    is_verified: true,
+    created_at: "2026-03-01T10:00:00Z",
+  },
+];
+

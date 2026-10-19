@@ -31,11 +31,13 @@ import {
   Layers,
   HelpCircle,
   TrendingUp,
+  Trash2,
 } from "lucide-react";
 import { bookTrialAction } from "@/lib/auth/actions";
 import type { UserRole } from "@/types/database.types";
-import type { Group, SubscriptionPlan } from "@/lib/data/academy-store";
+import type { Group, SubscriptionPlan, Testimonial } from "@/lib/data/academy-store";
 import type { CoachProfile } from "@/lib/actions/coaches";
+import { createTestimonialAction, deleteTestimonialAction } from "@/lib/actions/testimonials";
 
 interface LandingPageViewProps {
   currentUser?: {
@@ -47,6 +49,7 @@ interface LandingPageViewProps {
   groups?: Group[];
   coaches?: CoachProfile[];
   plans?: SubscriptionPlan[];
+  initialTestimonials?: Testimonial[];
 }
 
 export function LandingPageView({
@@ -55,6 +58,7 @@ export function LandingPageView({
   groups = [],
   coaches = [],
   plans = [],
+  initialTestimonials = [],
 }: LandingPageViewProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedAgeCategory, setSelectedAgeCategory] = useState<string>("all");
@@ -75,6 +79,62 @@ export function LandingPageView({
     phone: string;
     ageCategory: string;
   } | null>(null);
+
+  // Real testimonials state & handlers
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(initialTestimonials || []);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [revParentName, setRevParentName] = useState(currentUser?.fullName || "");
+  const [revChildName, setRevChildName] = useState("");
+  const [revAgeCategory, setRevAgeCategory] = useState("U10");
+  const [revRating, setRevRating] = useState(5);
+  const [revHoverRating, setRevHoverRating] = useState(0);
+  const [revContent, setRevContent] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [reviewStatusMsg, setReviewStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!revParentName.trim() || !revContent.trim()) {
+      setReviewStatusMsg({ type: "error", text: "يرجى كتابة اسم ولي الأمر ورأيك في الأكاديمية" });
+      return;
+    }
+
+    setIsSubmittingReview(true);
+    setReviewStatusMsg(null);
+    try {
+      const res = await createTestimonialAction({
+        parent_name: revParentName,
+        child_name: revChildName,
+        age_category: revAgeCategory,
+        rating: revRating,
+        content: revContent,
+      });
+
+      if (res.success && res.data) {
+        setTestimonials((prev) => [res.data!, ...prev]);
+        setReviewStatusMsg({ type: "success", text: "تم نشر تقييمك ورأيك بنجاح! شكرًا لثقتكم الغالية." });
+        setRevContent("");
+        setTimeout(() => {
+          setShowReviewModal(false);
+          setReviewStatusMsg(null);
+        }, 1800);
+      } else {
+        setReviewStatusMsg({ type: "error", text: res.error || "تعذر نشر التقييم" });
+      }
+    } catch {
+      setReviewStatusMsg({ type: "error", text: "حدث خطأ أثناء حفظ التقييم" });
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
+  const handleDeleteReview = async (id: string) => {
+    if (!confirm("هل أنت متأكد من رغبتك في حذف هذا التقييم؟")) return;
+    const res = await deleteTestimonialAction(id);
+    if (res.success) {
+      setTestimonials((prev) => prev.filter((t) => t.id !== id));
+    }
+  };
 
   const handleBookTrial = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1180,10 +1240,10 @@ export function LandingPageView({
       </section>
 
       {/* =========================================================================
-          PARENT TESTIMONIALS & REVIEWS
+          PARENT TESTIMONIALS & REVIEWS (حقيقي 100% وديناميكي)
          ========================================================================= */}
       <section className="py-16 md:py-24 bg-[#081017] border-t border-[#142330]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           <div className="text-center space-y-3 max-w-2xl mx-auto">
             <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
               تجارب حقيقية ورأي أولياء الأمور
@@ -1196,69 +1256,274 @@ export function LandingPageView({
             </p>
           </div>
 
+          {/* Quick Stats & Action Toolbar */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-5xl mx-auto p-4 rounded-2xl bg-[#0d1620] border border-[#1b2b3b]">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1 text-amber-400">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-4 w-4 fill-amber-400" />
+                ))}
+              </div>
+              <span className="text-xs font-bold text-white">
+                متوسط التقييم العام:{" "}
+                <span className="text-amber-400 font-black">
+                  {testimonials.length > 0
+                    ? (
+                        testimonials.reduce((sum, t) => sum + (t.rating || 5), 0) /
+                        testimonials.length
+                      ).toFixed(1)
+                    : "5.0"}{" "}
+                  / 5
+                </span>{" "}
+                ({testimonials.length} تقييم حقيقي)
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowReviewModal(true);
+                setReviewStatusMsg(null);
+              }}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 flex items-center gap-2 cursor-pointer transition-all hover:scale-105"
+            >
+              <Star className="h-3.5 w-3.5 fill-slate-950" />
+              <span>أضف رأيك وتجربتك كولي أمر ✍️</span>
+            </button>
+          </div>
+
+          {/* Testimonial Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            <div className="p-6 rounded-2xl bg-[#0e1923] border border-[#1b2b3b] space-y-4 text-start">
-              <div className="flex items-center gap-1 text-amber-400">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-amber-400" />
-                ))}
-              </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                &ldquo;التطور في مهارات ابني عمر (U10) كان ملحوظاً جداً خلال 3 أشهر فقط. الأكاديمية تتميز بالانضباط والمدربين يتعاملون باحترافية وأسلوب تربوي رائع.&rdquo;
-              </p>
-              <div className="pt-3 border-t border-[#192b3b] flex items-center justify-between text-xs">
-                <div>
-                  <p className="font-bold text-white">أ. وائل الشاذلي</p>
-                  <p className="text-[10px] text-slate-400">ولي أمر اللاعب عمر — فئة U10</p>
-                </div>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-bold">
-                  مشترك معتمد ✅
-                </span>
-              </div>
-            </div>
+            {testimonials.map((testim) => (
+              <div
+                key={testim.id}
+                className="relative p-6 rounded-2xl bg-[#0e1923] border border-[#1b2b3b] hover:border-amber-500/30 transition-all space-y-4 text-start flex flex-col justify-between"
+              >
+                {/* Admin Delete Action */}
+                {currentUser?.role === "admin" && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteReview(testim.id)}
+                    title="حذف هذا الرأي (صلاحية مدير)"
+                    className="absolute top-4 left-4 p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 hover:text-rose-300 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
 
-            <div className="p-6 rounded-2xl bg-[#0e1923] border border-amber-500/30 space-y-4 text-start shadow-xl shadow-amber-950/20">
-              <div className="flex items-center gap-1 text-amber-400">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-amber-400" />
-                ))}
-              </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                &ldquo;أفضل ما في الأكاديمية هو المنظومة الإلكترونية، تأتيني رسالة على هاتفي فور تسجيل حضور ابني في الملعب، والتقرير الشهري يعطيني صورة واضحة لنقاط القوة والضعف.&rdquo;
-              </p>
-              <div className="pt-3 border-t border-[#192b3b] flex items-center justify-between text-xs">
-                <div>
-                  <p className="font-bold text-white">د. سارة عبد الحميد</p>
-                  <p className="text-[10px] text-slate-400">والدة اللاعب ياسين — فئة U8</p>
-                </div>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-bold">
-                  مشترك معتمد ✅
-                </span>
-              </div>
-            </div>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-1 text-amber-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${
+                          i < (testim.rating || 5)
+                            ? "fill-amber-400 text-amber-400"
+                            : "text-slate-600"
+                        }`}
+                      />
+                    ))}
+                    <span className="text-[11px] font-black text-amber-400/90 mr-1.5">
+                      {testim.rating || 5}/5
+                    </span>
+                  </div>
 
-            <div className="p-6 rounded-2xl bg-[#0e1923] border border-[#1b2b3b] space-y-4 text-start">
-              <div className="flex items-center gap-1 text-amber-400">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-amber-400" />
-                ))}
-              </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                &ldquo;كابتن محمود مدرب ممتاز جداً، ابني كان خجولاً في اللعب الجماعي والآن أصبح قائداً لفريقه في فئة U12. شكراً لإدارة الأكاديمية على الاهتمام الحقيقي.&rdquo;
-              </p>
-              <div className="pt-3 border-t border-[#192b3b] flex items-center justify-between text-xs">
-                <div>
-                  <p className="font-bold text-white">م. حسام النجار</p>
-                  <p className="text-[10px] text-slate-400">ولي أمر اللاعب زياد — فئة U12</p>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    &ldquo;{testim.content}&rdquo;
+                  </p>
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-bold">
-                  مشترك معتمد ✅
-                </span>
+
+                <div className="pt-3 border-t border-[#192b3b] flex items-center justify-between text-xs">
+                  <div>
+                    <p className="font-bold text-white">{testim.parent_name}</p>
+                    <p className="text-[10px] text-slate-400">
+                      {testim.child_name
+                        ? `ولي أمر اللاعب ${testim.child_name}`
+                        : "ولي أمر معتمد"}{" "}
+                      {testim.age_category ? `— فئة ${testim.age_category}` : ""}
+                    </p>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-bold">
+                    مشترك معتمد ✅
+                  </span>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
+
+      {/* Review Submission Modal (أضف رأيك وتجربتك كولي أمر) */}
+      {showReviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="relative w-full max-w-lg rounded-3xl bg-[#0D1117] border border-amber-500/40 p-6 sm:p-8 text-start space-y-5 shadow-2xl text-white">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="h-9 w-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                  <Star className="h-5 w-5 fill-amber-400" />
+                </div>
+                <div>
+                  <h3 className="font-black text-base text-white">
+                    شاركنا رأيك وتجربتك في الأكاديمية ⚽
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    رأيك يساعدنا على التطوير ويشجع الأسر الأخرى على الانضمام
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowReviewModal(false)}
+                className="rounded-full p-1.5 text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {reviewStatusMsg && (
+              <div
+                className={`p-3 rounded-xl text-xs font-bold ${
+                  reviewStatusMsg.type === "success"
+                    ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-300"
+                    : "bg-rose-500/15 border border-rose-500/30 text-rose-300"
+                }`}
+              >
+                {reviewStatusMsg.text}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmitReview} className="space-y-4 text-xs">
+              {/* Star Rating Selector */}
+              <div className="space-y-1.5 text-center p-3 rounded-xl bg-[#141b24] border border-slate-800">
+                <label className="text-slate-300 font-bold block mb-1">
+                  تقييمك العام للأكاديمية والمدربين
+                </label>
+                <div className="flex items-center justify-center gap-2">
+                  {[1, 2, 3, 4, 5].map((starValue) => {
+                    const isFilled =
+                      (revHoverRating || revRating) >= starValue;
+                    return (
+                      <button
+                        type="button"
+                        key={starValue}
+                        onClick={() => setRevRating(starValue)}
+                        onMouseEnter={() => setRevHoverRating(starValue)}
+                        onMouseLeave={() => setRevHoverRating(0)}
+                        className="p-1 transition-transform hover:scale-125 cursor-pointer focus:outline-none"
+                      >
+                        <Star
+                          className={`h-7 w-7 transition-colors ${
+                            isFilled
+                              ? "fill-amber-400 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
+                              : "text-slate-600"
+                          }`}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+                <span className="text-[11px] text-amber-400 font-bold">
+                  {revRating === 5
+                    ? "ممتاز جداً 🌟 (5 نجوم)"
+                    : revRating === 4
+                    ? "جيد جداً (4 نجوم)"
+                    : revRating === 3
+                    ? "جيد (3 نجوم)"
+                    : "مقبول"}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-slate-300 font-bold block">
+                    اسم ولي الأمر *
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="أ. محمد الشريف"
+                    value={revParentName}
+                    onChange={(e) => setRevParentName(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl bg-[#141b24] border border-slate-700 text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-slate-300 font-bold block">
+                    اسم اللاعب (ابنك / ابنتك)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="كريم"
+                    value={revChildName}
+                    onChange={(e) => setRevChildName(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl bg-[#141b24] border border-slate-700 text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-slate-300 font-bold block">
+                  الفئة السنية للاعب
+                </label>
+                <select
+                  value={revAgeCategory}
+                  onChange={(e) => setRevAgeCategory(e.target.value)}
+                  className="w-full h-10 px-3 rounded-xl bg-[#141b24] border border-slate-700 text-white focus:outline-none focus:border-amber-500"
+                >
+                  <option value="U8">فئة البراعم المبكرة (U8)</option>
+                  <option value="U10">فئة البراعم (U10)</option>
+                  <option value="U12">فئة الأشبال (U12)</option>
+                  <option value="U14">فئة الناشئين (U14)</option>
+                  <option value="U16">فئة الشباب (U16)</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-slate-300 font-bold block">
+                  رأيك وتجربتك في الأكاديمية والمدربين *
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  placeholder="اكتب هنا تجربتك الصادقة عن التدريب، المعاملة، التطور الفني والبدني لطفلك..."
+                  value={revContent}
+                  onChange={(e) => setRevContent(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-[#141b24] border border-slate-700 text-white focus:outline-none focus:border-amber-500 resize-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowReviewModal(false)}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingReview}
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  {isSubmittingReview ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin text-slate-950" />
+                      <span>جاري النشر...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-3.5 w-3.5" />
+                      <span>نشر التقييم فوراً</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
 
       {/* =========================================================================
           INTERACTIVE FAQ ACCORDION
