@@ -204,3 +204,40 @@ export async function deleteGroup(groupId: string): Promise<{ success: boolean; 
 
   return { success: true };
 }
+
+/**
+ * Assign a coach to a specific group
+ */
+export async function assignCoachToGroup(
+  groupId: string,
+  coachId: string,
+  coachName: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    await (supabase.from("groups") as any)
+      .update({ coach_id: coachId, updated_at: new Date().toISOString() })
+      .eq("id", groupId);
+  } catch {
+    // ignore
+  }
+
+  const customGroups = await getStoredCustomGroups();
+  const all = [...customGroups, ...INITIAL_GROUPS];
+  const target = all.find((g) => g.id === groupId);
+  if (target) {
+    target.coach_id = coachId;
+    target.coach_name = coachName;
+    const existingIdx = customGroups.findIndex((g) => g.id === groupId);
+    if (existingIdx >= 0) {
+      customGroups[existingIdx] = target;
+    } else {
+      customGroups.push(target);
+    }
+    await saveCustomGroups(customGroups);
+  }
+
+  revalidatePath("/admin/coaches");
+  revalidatePath("/admin/groups");
+  return { success: true };
+}

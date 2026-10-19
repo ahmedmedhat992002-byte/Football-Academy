@@ -9,6 +9,8 @@ import {
   rejectCoachAction,
   saveCoachAction,
 } from "@/lib/actions/coaches";
+import { assignCoachToGroup } from "@/lib/actions/groups";
+import type { Player, Group, Session, Evaluation } from "@/lib/data/academy-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,65 +30,140 @@ import {
   MessageSquare,
   Calendar,
   Star,
-  Sparkles,
   ExternalLink,
-  Activity,
-  FileText,
+  Layers,
 } from "lucide-react";
 
 interface CoachesManagerViewProps {
   initialCoaches: CoachProfile[];
+  initialPlayers?: Player[];
+  initialGroups?: Group[];
+  initialSessions?: Session[];
+  initialEvaluations?: Evaluation[];
 }
 
-// Helpers to get coach realistic badges and metadata
-function getCoachMetadata(coach: CoachProfile, index: number) {
-  const spec = (coach.specialization || "").toLowerCase();
-  const name = coach.full_name || "";
+export interface CoachRealStats {
+  assignedGroups: string[];
+  playersCount: number;
+  sessionsCount: number;
+  hasEvaluations: boolean;
+  rating: string;
+  evaluationsCount: number;
+}
 
-  let roleCategory = "مدير فني للبراعم";
-  let licenseBadge = "CAF B LICENSE";
-  let iconType: "head" | "gk" | "fitness" | "general" = "head";
+// Compute genuine real statistics for each coach based on live academy data
+function computeRealCoachStats(
+  coach: CoachProfile,
+  allPlayers: Player[],
+  allGroups: Group[],
+  allSessions: Session[],
+  allEvaluations: Evaluation[]
+): CoachRealStats {
+  const coachNameLower = (coach.full_name || "").toLowerCase().trim();
+  const coachId = coach.id;
 
-  if (spec.includes("حراس") || name.includes("حراس")) {
-    roleCategory = "مدرب حراس المرمى التخصصي";
-    licenseBadge = "FIFA GK SPECIALIST";
-    iconType = "gk";
-  } else if (spec.includes("أحمال") || spec.includes("بدني") || spec.includes("تأهيل")) {
-    roleCategory = "مخطط أحمال وتأهيل بدني";
-    licenseBadge = "PRO FITNESS COACH";
-    iconType = "fitness";
-  } else if (spec.includes("caf a") || spec.includes("رخصة caf a")) {
-    licenseBadge = "CAF A LICENSE";
-  } else if (spec.includes("caf b")) {
-    licenseBadge = "CAF B LICENSE";
+  // 1. Find all groups linked to this coach
+  const matchingGroups = allGroups.filter((g) => {
+    if (g.coach_id && (g.coach_id === coachId || coachId.includes(g.coach_id) || g.coach_id.includes(coachId))) {
+      return true;
+    }
+    const groupCoachLower = (g.coach_name || "").toLowerCase().trim();
+    if (groupCoachLower && (coachNameLower.includes(groupCoachLower) || groupCoachLower.includes(coachNameLower))) {
+      return true;
+    }
+    if (coach.assigned_groups?.some((ag) => ag.includes(g.name) || g.name.includes(ag) || ag.includes(g.age_category))) {
+      return true;
+    }
+    return false;
+  });
+
+  const coachGroupIds = new Set(matchingGroups.map((g) => g.id));
+  const coachGroupNames = new Set(matchingGroups.map((g) => g.name));
+
+  // Add any explicitly declared assigned groups
+  if (coach.assigned_groups && Array.isArray(coach.assigned_groups)) {
+    coach.assigned_groups.forEach((ag) => {
+      if (ag) coachGroupNames.add(ag);
+    });
   }
 
-  // Realistic academy stats
-  const stats = {
-    playersCount: 16 + ((index * 7) % 14),
-    sessionsThisMonth: 18 + ((index * 5) % 12),
-    rating: (4.8 + ((index * 0.1) % 0.3)).toFixed(1),
-    commitmentRate: "100%",
-  };
+  const assignedGroupsList = Array.from(coachGroupNames);
 
-  const staffId = `STAFF-0${index + 1}`;
+  // 2. Real Players Count:
+  // Count players enrolled in these groups
+  const coachPlayers = allPlayers.filter((p) => {
+    if (p.group_id && coachGroupIds.has(p.group_id)) return true;
+    if (p.group_name && Array.from(coachGroupNames).some((gn) => p.group_name?.includes(gn) || gn.includes(p.group_name || ""))) return true;
+    return false;
+  });
+  const playersCount = coachPlayers.length;
+  const coachPlayerIds = new Set(coachPlayers.map((p) => p.id));
+
+  // 3. Real Sessions Count:
+  // Count sessions scheduled or taken by this coach
+  const coachSessions = allSessions.filter((s) => {
+    if (s.coach_id && (s.coach_id === coachId || coachId.includes(s.coach_id))) return true;
+    const sessionCoachLower = (s.coach_name || "").toLowerCase().trim();
+    if (sessionCoachLower && (coachNameLower.includes(sessionCoachLower) || sessionCoachLower.includes(coachNameLower))) return true;
+    if (s.group_id && coachGroupIds.has(s.group_id)) return true;
+    if (s.group_name && Array.from(coachGroupNames).some((gn) => s.group_name?.includes(gn))) return true;
+    return false;
+  });
+  const sessionsCount = coachSessions.length;
+
+  // 4. Real Evaluations & Rating:
+  // Compute from evaluations given by this coach or for this coach's players
+  const coachEvals = allEvaluations.filter((e) => {
+    if (e.coach_id && (e.coach_id === coachId || coachId.includes(e.coach_id))) return true;
+    const evalCoachLower = (e.coach_name || "").toLowerCase().trim();
+    if (evalCoachLower && (coachNameLower.includes(evalCoachLower) || evalCoachLower.includes(coachNameLower))) return true;
+    if (e.player_id && coachPlayerIds.has(e.player_id)) return true;
+    return false;
+  });
+
+  const hasEvaluations = coachEvals.length > 0;
+  let rating = "قيد التقييم";
+
+  if (hasEvaluations) {
+    const sum = coachEvals.reduce((acc, ev) => {
+      const overall = ev.overall_score || (
+        ((ev.technical || 0) + (ev.physical || 0) + (ev.tactical || 0) + (ev.discipline || 0)) / 4
+      ) || 10;
+      return acc + overall;
+    }, 0);
+    // Convert 10-point scale to 5-star scale
+    const avgOut5 = (sum / coachEvals.length / 2).toFixed(1);
+    rating = avgOut5;
+  }
 
   return {
-    roleCategory,
-    licenseBadge,
-    iconType,
-    stats,
-    staffId,
+    assignedGroups: assignedGroupsList,
+    playersCount,
+    sessionsCount,
+    hasEvaluations,
+    rating,
+    evaluationsCount: coachEvals.length,
   };
 }
 
-export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) {
+export function CoachesManagerView({
+  initialCoaches,
+  initialPlayers = [],
+  initialGroups = [],
+  initialSessions = [],
+  initialEvaluations = [],
+}: CoachesManagerViewProps) {
   const [coaches, setCoaches] = useState<CoachProfile[]>(initialCoaches);
+  const [groups, setGroups] = useState<Group[]>(initialGroups);
   const [statusFilter, setStatusFilter] = useState<"all" | "approved" | "pending">("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isPending, startTransition] = useTransition();
+
+  // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
+  const [assigningCoach, setAssigningCoach] = useState<CoachProfile | null>(null);
+  const [selectedGroupId, setSelectedGroupId] = useState("");
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // New coach modal state
@@ -106,9 +183,28 @@ export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) 
     [coaches]
   );
 
+  // Map each coach to their real live stats
+  const coachesWithRealStats = useMemo(() => {
+    return coaches.map((coach, index) => {
+      const realStats = computeRealCoachStats(
+        coach,
+        initialPlayers,
+        groups,
+        initialSessions,
+        initialEvaluations
+      );
+      const staffId = `STAFF-0${index + 1}`;
+      return {
+        ...coach,
+        realStats,
+        staffId,
+      };
+    });
+  }, [coaches, initialPlayers, groups, initialSessions, initialEvaluations]);
+
   // Filtered coaches list
   const filteredCoaches = useMemo(() => {
-    return coaches.filter((coach) => {
+    return coachesWithRealStats.filter((coach) => {
       // 1. Status Filter
       if (statusFilter === "pending" && coach.status !== "pending_approval") return false;
       if (statusFilter === "approved" && coach.status !== "approved") return false;
@@ -133,7 +229,7 @@ export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) 
 
       return true;
     });
-  }, [coaches, statusFilter, categoryFilter, searchQuery]);
+  }, [coachesWithRealStats, statusFilter, categoryFilter, searchQuery]);
 
   const handleApprove = (coachId: string) => {
     startTransition(async () => {
@@ -199,6 +295,37 @@ export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) 
     });
   };
 
+  const handleAssignGroup = () => {
+    if (!assigningCoach || !selectedGroupId) return;
+
+    startTransition(async () => {
+      const res = await assignCoachToGroup(
+        selectedGroupId,
+        assigningCoach.id,
+        assigningCoach.full_name
+      );
+
+      if (res.success) {
+        setGroups((prev) =>
+          prev.map((g) =>
+            g.id === selectedGroupId
+              ? { ...g, coach_id: assigningCoach.id, coach_name: assigningCoach.full_name }
+              : g
+          )
+        );
+
+        setAssigningCoach(null);
+        setSelectedGroupId("");
+        setStatusMessage({
+          type: "success",
+          text: `تم إسناد المجموعة بنجاح للكابتن (${assigningCoach.full_name})، وتم تحديث عدد اللاعبين والحصص فورياً!`,
+        });
+      } else {
+        setStatusMessage({ type: "error", text: "تعذر إسناد المجموعة" });
+      }
+    });
+  };
+
   const getCleanPhone = (phone?: string) => {
     if (!phone) return "";
     return phone.replace(/[^0-9]/g, "");
@@ -208,7 +335,6 @@ export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) 
     <div className="space-y-6 text-start" dir="rtl">
       {/* Top Hero Banner - Obsidian & Gold */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0D1117] via-[#161f2c] to-[#0D1117] border border-amber-500/30 p-6 md:p-8 text-white shadow-2xl">
-        {/* Subtle Pitch Markings overlay */}
         <div className="absolute inset-0 bg-[radial-gradient(#F59E0B_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -227,10 +353,10 @@ export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) 
                 <span>FIFA FC ACADEMY • الإدارة الفنية المركزية</span>
               </div>
               <h1 className="text-xl md:text-3xl font-black text-white tracking-wide">
-                دليل الجهاز الفني واعتماد المدربين
+                دليل الجهاز الفني والمدربين
               </h1>
               <p className="text-xs md:text-sm text-slate-300 max-w-xl">
-                إدارة بطاقات الكباتن المعتمدين، متابعة التقييمات، وتعيين المجموعات التدريبية وفق أعلى معايير الاحتراف الرياضي.
+                بطاقات الكباتن المعتمدة مع إحصائيات حقيقية متصلة باللاعبين المقيدين، جدول الحصص الفعلي، والتقييمات الميدانية المسجلة.
               </p>
             </div>
           </div>
@@ -369,7 +495,7 @@ export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) 
               </span>
             </div>
             <p className="text-xs text-slate-400">
-              ملفات الكباتن الفنية، التراخيص المعتمدة، الحصص الشهرية، والاتصال المباشر
+              بيانات وإحصائيات حقيقية محسوبة من سجلات اللاعبين، الحصص المجدولة، والتقييمات
             </p>
           </div>
 
@@ -484,7 +610,7 @@ export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) 
           </button>
         </div>
 
-        {/* Coaches Grid - Ultra-Professional Cards */}
+        {/* Coaches Grid */}
         {filteredCoaches.length === 0 ? (
           <div className="py-16 text-center space-y-3 bg-[#131b24] rounded-2xl border border-slate-800">
             <Users2 className="h-10 w-10 text-slate-600 mx-auto" />
@@ -493,10 +619,10 @@ export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) 
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-5">
-            {filteredCoaches.map((coach, index) => {
-              const meta = getCoachMetadata(coach, index);
+            {filteredCoaches.map((coach) => {
               const cleanPhone = getCleanPhone(coach.phone);
               const isApproved = coach.status === "approved";
+              const realStats = coach.realStats;
 
               return (
                 <div
@@ -505,13 +631,17 @@ export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) 
                 >
                   {/* Top Tactical Card Header Strip */}
                   <div className="relative px-5 pt-4 pb-3 bg-gradient-to-r from-[#1c2734] via-[#16202c] to-[#121a24] border-b border-slate-800/80 flex items-center justify-between">
-                    {/* Staff ID & License Badge */}
+                    {/* Staff ID */}
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-[10px] font-bold text-slate-400 bg-slate-900/80 px-2 py-0.5 rounded-md border border-slate-700/60">
-                        {meta.staffId}
+                        {coach.staffId}
                       </span>
                       <span className="text-[9px] font-black tracking-wider px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                        {meta.licenseBadge}
+                        {coach.specialization?.includes("حراس")
+                          ? "FIFA GK SPECIALIST"
+                          : coach.specialization?.includes("أحمال")
+                          ? "PRO FITNESS COACH"
+                          : "CAF B LICENSE"}
                       </span>
                     </div>
 
@@ -552,7 +682,7 @@ export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) 
                         </div>
 
                         <p className="text-xs text-amber-400 font-bold line-clamp-1">
-                          {coach.specialization || meta.roleCategory}
+                          {coach.specialization || "مدرب معتمد"}
                         </p>
 
                         <div className="flex items-center gap-2 text-[11px] text-slate-400">
@@ -562,7 +692,7 @@ export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) 
                       </div>
                     </div>
 
-                    {/* Contact details */}
+                    {/* Contact Details */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 rounded-xl bg-[#0b1016] border border-slate-800/80 text-[11px] text-slate-300">
                       <div className="flex items-center gap-2 truncate">
                         <Mail className="h-3.5 w-3.5 text-slate-500 shrink-0" />
@@ -578,60 +708,80 @@ export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) 
                       </div>
                     </div>
 
-                    {/* Assigned Teams / Groups */}
+                    {/* Assigned Teams / Groups Section with Quick Assign */}
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-[10px] text-slate-400">
-                        <span className="font-bold">الفرق والفئات المسندة:</span>
-                        <span className="text-amber-400 font-bold">
-                          {coach.assigned_groups?.length || 2} مجموعات
-                        </span>
+                        <span className="font-bold">الفرق والفئات المسندة (حقيقي):</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAssigningCoach(coach);
+                            setSelectedGroupId("");
+                          }}
+                          className="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-0.5 cursor-pointer hover:underline"
+                        >
+                          <Layers className="h-3 w-3" />
+                          <span>إسناد / تغيير مجموعة</span>
+                        </button>
                       </div>
 
                       <div className="flex flex-wrap gap-1.5">
-                        {coach.assigned_groups && coach.assigned_groups.length > 0 ? (
-                          coach.assigned_groups.map((grp, i) => (
+                        {realStats.assignedGroups.length > 0 ? (
+                          realStats.assignedGroups.map((grpName, i) => (
                             <span
                               key={i}
                               className="px-2.5 py-1 rounded-lg bg-[#1a2533] text-amber-300 text-[10px] font-bold border border-amber-500/30"
                             >
-                              ⚽ {grp}
+                              ⚽ {grpName}
                             </span>
                           ))
                         ) : (
-                          <>
-                            <span className="px-2.5 py-1 rounded-lg bg-[#1a2533] text-amber-300 text-[10px] font-bold border border-amber-500/30">
-                              ⚽ فريق النجوم (U10)
-                            </span>
-                            <span className="px-2.5 py-1 rounded-lg bg-[#1a2533] text-amber-300 text-[10px] font-bold border border-amber-500/30">
-                              ⚽ فريق الأبطال (U12)
-                            </span>
-                          </>
+                          <span className="px-2.5 py-1 rounded-lg bg-slate-900/80 text-slate-400 text-[10px] font-bold border border-slate-800">
+                            لم تُسند مجموعات بعد
+                          </span>
                         )}
                       </div>
                     </div>
 
-                    {/* Realistic Performance Stats Bar */}
+                    {/* Real Coaching KPIs Bar (حقيقي 100%) */}
                     <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800/80 text-center">
-                      <div className="p-2 rounded-xl bg-[#0b1016] border border-slate-800/60">
-                        <span className="text-[10px] text-slate-400 block">اللاعبين</span>
-                        <span className="text-xs font-black text-white">
-                          {meta.stats.playersCount} لاعب
+                      {/* Real Players Count */}
+                      <div className="p-2.5 rounded-xl bg-[#0b1016] border border-slate-800/60 flex flex-col justify-center">
+                        <span className="text-[10px] text-slate-400 block mb-0.5">اللاعبين</span>
+                        <span
+                          className={`text-xs font-black ${
+                            realStats.playersCount > 0 ? "text-white" : "text-slate-500"
+                          }`}
+                        >
+                          {realStats.playersCount} لاعب
                         </span>
                       </div>
 
-                      <div className="p-2 rounded-xl bg-[#0b1016] border border-slate-800/60">
-                        <span className="text-[10px] text-slate-400 block">الحصص</span>
-                        <span className="text-xs font-black text-white">
-                          {meta.stats.sessionsThisMonth} حصة
+                      {/* Real Sessions Count */}
+                      <div className="p-2.5 rounded-xl bg-[#0b1016] border border-slate-800/60 flex flex-col justify-center">
+                        <span className="text-[10px] text-slate-400 block mb-0.5">الحصص</span>
+                        <span
+                          className={`text-xs font-black ${
+                            realStats.sessionsCount > 0 ? "text-white" : "text-slate-500"
+                          }`}
+                        >
+                          {realStats.sessionsCount} حصة
                         </span>
                       </div>
 
-                      <div className="p-2 rounded-xl bg-[#0b1016] border border-slate-800/60">
-                        <span className="text-[10px] text-slate-400 block">التقييم</span>
-                        <span className="text-xs font-black text-amber-400 flex items-center justify-center gap-0.5">
-                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                          {meta.stats.rating}
-                        </span>
+                      {/* Real Evaluation Rating */}
+                      <div className="p-2.5 rounded-xl bg-[#0b1016] border border-slate-800/60 flex flex-col justify-center">
+                        <span className="text-[10px] text-slate-400 block mb-0.5">التقييم</span>
+                        {realStats.hasEvaluations ? (
+                          <span className="text-xs font-black text-amber-400 flex items-center justify-center gap-0.5">
+                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                            {realStats.rating}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-slate-500 block">
+                            قيد التقييم
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -700,6 +850,67 @@ export function CoachesManagerView({ initialCoaches }: CoachesManagerViewProps) 
           </div>
         )}
       </div>
+
+      {/* Assign Group Modal */}
+      {assigningCoach && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="relative w-full max-w-md rounded-3xl bg-[#0D1117] border border-amber-500/40 p-6 text-start space-y-4 shadow-2xl text-white">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Layers className="h-5 w-5 text-amber-400" />
+                <h3 className="font-bold text-sm text-white">
+                  إسناد مجموعة تدريبية للكابتن ({assigningCoach.full_name})
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAssigningCoach(null)}
+                className="rounded-full p-1 text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-300">
+              اختر المجموعة التدريبية من المجموعات الرسمية بالأكاديمية ليتم ربط لاعبيها وحصصها التدريبية فوراً بحساب الكابتن:
+            </p>
+
+            <div className="space-y-1">
+              <label className="text-slate-300 font-bold block text-xs">المجموعة التدريبية</label>
+              <select
+                value={selectedGroupId}
+                onChange={(e) => setSelectedGroupId(e.target.value)}
+                className="w-full h-11 rounded-xl bg-[#141b24] border border-slate-700 text-white px-3 text-xs focus:outline-none focus:border-amber-500"
+              >
+                <option value="">-- اختر مجموعة --</option>
+                {groups.map((grp) => (
+                  <option key={grp.id} value={grp.id}>
+                    {grp.name} ({grp.age_category}) — المدرب الحالي: {grp.coach_name || "غير محدد"}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setAssigningCoach(null)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white cursor-pointer"
+              >
+                إلغاء
+              </button>
+              <Button
+                type="button"
+                disabled={!selectedGroupId || isPending}
+                onClick={handleAssignGroup}
+                className="bg-[#F59E0B] hover:bg-[#FBBF24] text-slate-950 font-black text-xs px-5 py-2 rounded-xl shadow-md cursor-pointer"
+              >
+                تأكيد وحفظ الإسناد
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Coach Modal - Obsidian & Gold */}
       {showAddModal && (
